@@ -10,7 +10,7 @@ Organic search growth in Singapore's competitive mattress market. Content-led st
 3. Sleep science & tips — broad awareness, builds topical authority
 4. Owllight product deep dives — bottom-funnel, drives conversion
 
-**Publishing cadence:** 2–3 blog posts per month (via `/monthly-seo-run` or `/3blog-pipeline`)
+**Publishing cadence:** 2–3 blog posts per month (via `/3blog-seo-first-run` or `/ai-seo-pipeline`)
 
 **Blog collections to populate:**
 - Mattress Comparisons — competitor vs Owllight articles (high-intent)

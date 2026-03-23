@@ -1,22 +1,24 @@
 ---
-name: monthly-seo-run
+name: 3blog-seo-first-run
 description: >
-  Full monthly SEO cycle — the core RightClick:AI deliverable. Runs entirely from the client
-  workspace. Phases: load historical context → SEO audit → GSC + GA4 data + last30days market
-  research (parallel) → keyword research → SEO plan (on-page changes) → blog plan (no overlap
-  with SEO plan) → write 3 blogs with tone guide → approval gate → post blogs to CMS → execute
-  on-page title/meta/schema changes via API → full post-implementation monthly report.
-  Platform-aware: auto-detects Shopline or Webflow from client CLAUDE.md. Always builds on
-  prior months — never re-recommends resolved items, never repeats prior blog topics.
-  Use when user says "monthly run", "run the monthly", "full monthly SEO", "monthly SEO cycle",
-  "run everything for this client", or "monthly-seo-run".
+  Full SEO implementation + 3 blog posts — the complete first-run deliverable for any client.
+  Runs entirely from the client workspace. Phases: load historical context → SEO audit →
+  GSC + GA4 data + last30days market research (parallel) → keyword research → SEO plan
+  (on-page changes) → blog plan → write 3 blogs with tone guide → approval gate → post
+  blogs to CMS as drafts → execute on-page title/meta/schema changes via API → full
+  before/after implementation report (what changed field-by-field, health score delta,
+  what was pushed as drafts, what could not be updated and why). Platform-aware:
+  auto-detects Shopline or Webflow from client CLAUDE.md. Always builds on prior work —
+  never re-recommends resolved items, never repeats prior blog topics.
+  Use when user says "first run", "full run", "run everything", "3blog-seo-first-run",
+  "seo run", "run the seo", "do the full seo", or "run everything for this client".
 user-invocable: true
 argument-hint: "(no arguments — reads all config from CLAUDE.md)"
 ---
 
-# Monthly SEO Run
+# 3blog-seo-first-run
 
-The single command that runs the complete monthly SEO cycle for a client.
+The single command that runs the complete SEO implementation + content cycle for a client.
 Reads all configuration from the client's `CLAUDE.md` — no arguments needed.
 
 ---
@@ -26,21 +28,21 @@ Reads all configuration from the client's `CLAUDE.md` — no arguments needed.
 ```
 Content & SEO/outputs/{platform}-{handle}/
 ├── audit/
-│   ├── AUDIT-YYYY-MM-DD.md                      ← Phase 1
-│   └── POST-IMPLEMENTATION-AUDIT-YYYY-MM-DD.md  ← Phase 6 (monthly report)
+│   ├── AUDIT-YYYY-MM-DD.md                          ← Phase 1
+│   └── POST-IMPLEMENTATION-REPORT-YYYY-MM-DD.md     ← Phase 6 (full before/after report)
 ├── research/
-│   ├── GSC-REPORT-YYYY-MM-DD.md                 ← Phase 2a
-│   ├── GA4-REPORT-YYYY-MM-DD.md                 ← Phase 2b
-│   └── SOCIAL-TRENDS-YYYY-MM-DD.md              ← Phase 2c
+│   ├── GSC-REPORT-YYYY-MM-DD.md                     ← Phase 2a
+│   ├── GA4-REPORT-YYYY-MM-DD.md                     ← Phase 2b
+│   └── SOCIAL-TRENDS-YYYY-MM-DD.md                  ← Phase 2c
 ├── keywords/
-│   └── KEYWORDS-YYYY-MM-DD.md                   ← Phase 3a
+│   └── KEYWORDS-YYYY-MM-DD.md                       ← Phase 3a
 ├── implementation/
-│   ├── SEO-PLAN-YYYY-MM-DD.md                   ← Phase 3b
-│   └── SNAPSHOT-YYYY-MM-DD.md                   ← Phase 5 (before/after record)
+│   ├── SEO-PLAN-YYYY-MM-DD.md                       ← Phase 3b
+│   └── SNAPSHOT-YYYY-MM-DD.md                       ← Phase 5 (before/after record)
 ├── blog-plans/
-│   └── BLOG-PLAN-YYYY-MM-DD.md                  ← Phase 3c
+│   └── BLOG-PLAN-YYYY-MM-DD.md                      ← Phase 3c
 └── blogs/
-    ├── {post-1-slug}.html                        ← Phase 4
+    ├── {post-1-slug}.html                            ← Phase 4
     ├── {post-2-slug}.html
     └── {post-3-slug}.html
 ```
@@ -53,7 +55,7 @@ All files use `YYYY-MM-DD` suffix. Never overwrite prior files — always use to
 
 ```
 audit/AUDIT-YYYY-MM-DD.md
-audit/POST-IMPLEMENTATION-AUDIT-YYYY-MM-DD.md
+audit/POST-IMPLEMENTATION-REPORT-YYYY-MM-DD.md
 research/GSC-REPORT-YYYY-MM-DD.md
 research/GA4-REPORT-YYYY-MM-DD.md
 research/SOCIAL-TRENDS-YYYY-MM-DD.md
@@ -81,7 +83,7 @@ blogs/{post-slug}.html
 | 4 | Write 3 Blog Posts | `blogs/*.html` |
 | ⏸ | **Approval Gate** | — |
 | 5 | Execute: Post Blogs + On-page Changes | `implementation/SNAPSHOT-*.md` |
-| 6 | Monthly Post-Implementation Report | `audit/POST-IMPLEMENTATION-AUDIT-*.md` |
+| 6 | Full Before/After Implementation Report | `audit/POST-IMPLEMENTATION-REPORT-*.md` |
 
 Read each phase file before executing. Do not skip ahead.
 
@@ -102,19 +104,19 @@ Phase 2 Synthesis       → RESEARCH_SUMMARY combining all three
        ↓
 Phase 3a (Keywords)     → keyword targets derived from RESEARCH_SUMMARY
 Phase 3b (SEO Plan)     → on-page change plan (titles, meta, schema)
-Phase 3c (Blog Plan)    → 3 post plan — no topic overlap with SEO plan or prior blogs
+Phase 3c (Blog Plan)    → 3 post plan — no topic overlap with prior blogs
        ↓
 Phase 4 (Blogs)         → 3 posts written with tone guide applied
        ↓
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⏸  APPROVAL GATE — present summary, wait for explicit "approve"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        ↓
-Phase 5a (Post blogs)   → publish 3 posts to CMS (platform-specific)
+Phase 5a (Post blogs)   → publish 3 posts to CMS as drafts (platform-specific)
 Phase 5b (On-page)      → apply SEO title/meta/schema changes via API
 Phase 5c (Snapshot)     → save before/after record
        ↓
-Phase 6 (Report)        → full monthly POST-IMPLEMENTATION-AUDIT-*.md
+Phase 6 (Report)        → full POST-IMPLEMENTATION-REPORT-*.md
 ```
 
 **Stop at the Approval Gate. Never execute changes without explicit user approval.**

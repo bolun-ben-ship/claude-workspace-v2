@@ -120,10 +120,9 @@ Voice & tone:
 
 Available commands for {PLATFORM}:
   /ai-seo-pipeline          Full automation (3/6/12 months)
-  /monthly-seo-run          One-shot monthly cycle
+  /3blog-seo-first-run      Full run → 3 blogs + on-page changes + before/after report
   /seo-implementation-plan  Build plan only (no execution)
   /seo-final-report         End-of-engagement report
-  /3blog-pipeline           Write 3 blogs → push as drafts
   /{PLATFORM}-onpage-implement  Execute on-page changes via {PLATFORM} API
   /carousel                 Instagram carousel → HTML preview + PNG slides
 

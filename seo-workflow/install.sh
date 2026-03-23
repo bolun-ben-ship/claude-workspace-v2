@@ -16,13 +16,12 @@ AUDIT_ONLY=false
 [[ "${1:-}" == "--audit" ]] && AUDIT_ONLY=true
 
 SKILLS=(
-  3blog-pipeline
+  3blog-seo-first-run
   ai-seo-pipeline
   carousel
   ga4-report
   gsc-report
   last30days
-  monthly-seo-run
   seo-and-blog
   seo-audit
   seo-competitor-pages
@@ -74,7 +73,7 @@ if [ "$AUDIT_ONLY" = false ]; then
   done
 
   # Remove legacy/renamed skills
-  for legacy in seo seo-blog-implement shopline-seo-orchestrator webflow-seo-orchestrator site-automate; do
+  for legacy in seo seo-blog-implement shopline-seo-orchestrator webflow-seo-orchestrator site-automate 3blog-pipeline monthly-seo-run; do
     if [ -d "$SKILLS_DIR/$legacy" ]; then
       rm -rf "$SKILLS_DIR/$legacy"
       echo "  ✓ Removed legacy skill: $legacy"

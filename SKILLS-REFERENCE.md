@@ -2,7 +2,7 @@
 
 > Master reference for all skills, orchestrators, agents, subagents, and commands.
 > Source of truth: `seo-workflow/` — deploy with `bash seo-workflow/install.sh`
-> Last updated: 2026-03-23 (24 skills: 4 orchestrators, 2 data, 1 research, 1 routing plugin, 13 specialists, 1 design, 1 planning, 1 reporting)
+> Last updated: 2026-03-23 (23 skills: 3 orchestrators, 2 data, 1 research, 1 routing plugin, 13 specialists, 1 design, 1 planning, 1 reporting)
 
 ---
 
@@ -70,7 +70,7 @@ Skills read `CMS:` from `## Platform` in the client's `CLAUDE.md`.
 | `WordPress` | `wordpress` | WP REST API `status: draft` | `wordpress-onpage-implement` *(preview)* | `WP_{CLIENT}_TOKEN` |
 | anything else | `unknown` | Save HTML locally | Plan only — no execution | None required |
 
-**Skills using this routing:** `ai-seo-pipeline`, `monthly-seo-run`, `3blog-pipeline`, `seo-implementation-plan`
+**Skills using this routing:** `ai-seo-pipeline`, `3blog-seo-first-run`, `seo-implementation-plan`
 
 **Adding a new platform:** Add a row here → add execution blocks in each of the 4 skills above → create `{platform}-onpage-implement` skill → add to `install.sh` → confirm this file updated.
 
@@ -94,8 +94,8 @@ Run from the **client workspace** (`clients/{domain}/`).
 
 ---
 
-### `/monthly-seo-run` ⭐ Monthly One-Shot
-**What it does:** The complete monthly SEO cycle — run it once, get everything for that month.
+### `/3blog-seo-first-run` ⭐ Full Run
+**What it does:** The complete SEO implementation + content cycle — run it once, get everything: on-page changes executed, 3 blogs pushed as drafts, and a full before/after report.
 **Phases:**
 - Phase 0: Load historical context (prior reports, resolved items, blog history)
 - Phase 1: SEO audit (skips if recent audit exists)
@@ -105,10 +105,10 @@ Run from the **client workspace** (`clients/{domain}/`).
 - Phase 3c: Blog plan (3 posts — no overlap with prior topics)
 - Phase 4: Write 3 blog posts (applies tone-guide.md if present)
 - ⏸ **Approval gate**
-- Phase 5a: Post blogs to CMS (platform-routed)
+- Phase 5a: Post blogs to CMS as drafts (platform-routed)
 - Phase 5b: Apply on-page changes via platform API (platform-routed)
 - Phase 5c: Save before/after snapshot
-- Phase 6: Full monthly POST-IMPLEMENTATION-AUDIT report
+- Phase 6: Full POST-IMPLEMENTATION-REPORT — what changed (titles/meta/schema/other), health score delta, blogs pushed, what COULD NOT be updated and why (with reason categories + manual action required)
 **Platform-aware:** Reads `CMS:` from `CLAUDE.md` → routes Phase 5 to Shopline REST API, Webflow Data API + MCP, or WordPress REST API. Unknown platforms complete through Phase 4 only.
 **Credentials needed:** `{CLIENT}_GOOGLE_KEY` + platform token (see Platform Routing table above).
 
@@ -132,15 +132,6 @@ Run from the **client workspace** (`clients/{domain}/`).
 **Credentials needed:** `WEBFLOW_{CLIENT}_TOKEN` + Webflow MCP connected. Optionally: `{CLIENT}_GOOGLE_KEY`.
 
 ---
-
-### `/3blog-pipeline`
-**What it does:** Full 7-phase content + SEO pipeline for any platform. Writes 3 blog posts and pushes them to CMS as drafts.
-**Phases:** Historical context → SEO Audit → Social trends (last30days) → GSC/GA4 → SEO Plan → Keyword Research → Blog Plan → Write 3 blog posts → **Push to CMS as drafts** (platform-routed).
-**Platform-aware:** Reads `CMS:` from `CLAUDE.md` → routes blog push to Shopline REST API, Webflow MCP, or WordPress REST API. Unknown platforms save HTML locally.
-**Does NOT execute on-page title/meta changes** — use the matching `{platform}-onpage-implement` skill for that.
-**Credentials needed:** See Platform Routing table above.
-**Output files:** All 7 output folders populated.
-**Renamed from:** `seo-blog-implement` (legacy — removed from install).
 
 ---
 
@@ -308,7 +299,7 @@ ai-seo-pipeline (long-term automation — platform-aware)
   └─ end uses         → seo-final-report
   └─ scheduling via   → Claude Code scheduled tasks
 
-monthly-seo-run (one-shot monthly)
+3blog-seo-first-run (full run — on-page + 3 blogs + before/after report)
   └─ uses → seo-audit, gsc-report, ga4-report, last30days, seo-keywords, seo-plan, blog-calendar, blog-write
   └─ executes → Shopline Admin REST API (or Webflow Data API + MCP)
 
@@ -319,10 +310,6 @@ shopline-onpage-implement
 webflow-onpage-implement
   └─ uses → seo-audit, gsc-report, ga4-report, last30days, seo-plan
   └─ executes → Webflow Data API + MCP
-
-3blog-pipeline (formerly seo-blog-implement)
-  └─ uses → seo-audit, gsc-report, ga4-report, last30days, seo-plan, seo-keywords, blog-calendar, blog-write
-  └─ CMS push → Shopline API (drafts) or Webflow MCP (drafts)
 
 seo-implementation-plan
   └─ uses → seo-audit, gsc-report, ga4-report, last30days
@@ -349,7 +336,7 @@ bash seo-workflow/install.sh --audit  # audit only
 
 | Requirement | Used by |
 |---|---|
-| `SHOPLINE_{CLIENT}_TOKEN` env var | shopline-onpage-implement, 3blog-pipeline, ai-seo-pipeline |
+| `SHOPLINE_{CLIENT}_TOKEN` env var | shopline-onpage-implement, 3blog-seo-first-run, ai-seo-pipeline |
 | `WEBFLOW_{CLIENT}_TOKEN` env var | webflow-onpage-implement |
 | `{CLIENT}_GOOGLE_KEY` env var → path to JSON key file | gsc-report, ga4-report, all orchestrators |
 | `PERPLEXITY_API_KEY` env var | last30days (all clients except aexphl) |

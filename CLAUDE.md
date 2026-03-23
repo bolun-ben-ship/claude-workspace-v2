@@ -105,11 +105,10 @@ updates `clients.md`, and tells you exactly what token to add to `~/.zshrc`.
 |---|---|
 | `/prime` | Deep context loading — reads everything in full, produces a comprehensive Prime Brief for intensive work |
 | `/start-client` | Loads all client context and produces a Client Briefing |
-| `/monthly-seo-run` | Full monthly SEO cycle — audit → research → plan → write → approve → execute → report |
+| `/3blog-seo-first-run` | Full run — audit → research → plan → write 3 blogs → approve → execute on-page changes → before/after report |
 | `/ai-seo-pipeline` | Full long-term automation (3/6/12 months) — questionnaire → initial run → weekly blogs → monthly on-page → reports |
 | `/seo-implementation-plan` | Global — builds a before/after implementation plan from any client workspace (plan only, no execution) |
 | `/seo-final-report` | Global — produces a comprehensive end-of-engagement report comparing full history vs current state |
-| `/3blog-pipeline` | Content pipeline — audit → research → keywords → write 3 blogs → push to CMS as drafts (platform-aware) |
 | `/carousel` | Instagram carousel generator — branded slides, HTML preview, export as 1080×1350px PNGs |
 
 ---

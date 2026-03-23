@@ -43,7 +43,7 @@ One-off audits are lead-gen, not the business. The business is monthly retainers
 
 ### 4. Workflow completeness before scale
 The system needs to be reliable before pitching to partners at volume.
-Current gate: monthly-seo-run skill (audit → keywords → plan → blogs → post → report) working end-to-end for both Shopline and Webflow clients.
+Current gate: 3blog-seo-first-run skill (audit → keywords → plan → blogs → post → on-page changes → before/after report) working end-to-end for both Shopline and Webflow clients.
 
 ---
 

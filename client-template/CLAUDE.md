@@ -27,10 +27,9 @@
 | `/prime` | Deep context loading — reads all files + full output history, produces comprehensive Prime Brief for intensive work |
 | `/start-client` | Loads all client context and produces a Client Briefing — run at the start of every session |
 | `/ai-seo-pipeline` | Full automation (3/6/12 months) — guided questionnaire → initial run → weekly blogs → monthly on-page → reports |
-| `/monthly-seo-run` | One-shot monthly cycle — audit → research → plan → write 3 blogs → approve → execute → report |
+| `/3blog-seo-first-run` | Full run — audit → research → plan → write 3 blogs → approve → execute on-page changes → before/after report |
 | `/seo-implementation-plan` | Build a complete before/after SEO plan (no execution) — global, works on any platform |
 | `/seo-final-report` | End-of-engagement comprehensive report — global, works on any platform |
-| `/3blog-pipeline` | Write 3 blogs + push to CMS as drafts — platform-aware (Shopline / Webflow / WordPress) |
 | `/shopline-onpage-implement` | On-page changes via Shopline API — Shopline clients only |
 | `/webflow-onpage-implement` | On-page changes via Webflow API + MCP — Webflow clients only |
 | `/wordpress-onpage-implement` | On-page changes via WordPress REST API — WordPress clients only (preview) |

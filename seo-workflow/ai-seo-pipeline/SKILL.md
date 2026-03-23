@@ -77,9 +77,9 @@ This table governs every execution decision in this skill:
 
 **Each month (automated):**
 - Fresh GSC + GA4 + last30days research
-- Updated on-page implementation plan
+- **Report 1 (start):** MONTHLY-AUDIT-PLAN — combined SEO audit + full before/after implementation plan
 - Approval gate → execute approved changes via {PLATFORM} API
-- Monthly summary report
+- **Report 2 (end):** MONTHLY-POST-IMPL — post-implementation comparison (Phase 6 structure)
 
 **End of Week 1:**
 - WEEK-1-REPORT comparing implementation plan vs what was executed
@@ -112,7 +112,8 @@ Content & SEO/outputs/{platform}-{handle}/
 │   └── <post-slug>.html
 └── reports/
     ├── WEEK-1-REPORT-YYYY-MM-DD.md
-    ├── MONTHLY-REPORT-YYYY-MM.md
+    ├── MONTHLY-AUDIT-PLAN-YYYY-MM.md     ← Report 1: combined audit + implementation plan (before execution)
+    ├── MONTHLY-POST-IMPL-YYYY-MM.md      ← Report 2: post-implementation comparison (after execution)
     └── FINAL-REPORT-YYYY-MM-DD.md
 ```
 
@@ -483,15 +484,31 @@ Monthly on-page SEO review for {CLIENT_NAME} — platform: {PLATFORM}.
 2. Pull fresh GSC + GA4 data (last 30 days).
 3. Run last30days for "{PRIMARY_NICHE}".
 4. Identify: new CTR gaps, regressions vs prior snapshot, new keyword opportunities.
-5. Run seo-implementation-plan — produce updated before/after plan.
-6. If ONPAGE_APPROVAL = manual: present plan and wait for approval.
+5. Run full SEO audit + seo-implementation-plan together.
+   Save Report 1 (combined audit + plan) to reports/MONTHLY-AUDIT-PLAN-YYYY-MM.md.
+   Report 1 must include: health score, top issues, CTR gaps, keyword opportunities,
+   regressions vs prior snapshot, organic baseline, then the full before/after
+   implementation plan for every proposed change grouped by category (A–G),
+   plus deferred/manual items carried from last month.
+6. If ONPAGE_APPROVAL = manual: present Report 1 and wait for approval.
 7. Execute approved changes via {PLATFORM} API:
    - Shopline: metafields_set REST API
    - Webflow: Webflow Data API + MCP
    - WordPress: WP REST API + SEO plugin meta
    - Unknown: save plan only, no execution
-8. Save SNAPSHOT-YYYY-MM-DD.md and POST-IMPLEMENTATION-AUDIT-YYYY-MM-DD.md.
-9. Write monthly report to reports/MONTHLY-REPORT-YYYY-MM.md.
+8. Save SNAPSHOT-YYYY-MM-DD.md.
+9. Write Report 2 — post-implementation comparison — to reports/MONTHLY-POST-IMPL-YYYY-MM.md.
+   Use the 3blog-seo-first-run Phase 6 structure (10 sections):
+   1. Run Summary (health score before/after, coverage metrics delta)
+   2. On-Page Changes Applied (grouped: SEO Titles, Meta Descriptions, Schema, other)
+   3. Blog Posts Published as Drafts (this month's batch)
+   4. Items NOT Updated (every skipped item — reason + action required)
+   5. Resolved Items ✅
+   6. Outstanding Priorities ⏳ (carry to next month)
+   7. Regressions ⚠️ (anything that broke again vs prior snapshots)
+   8. Keywords Targeted This Month
+   9. Organic Baseline (GSC/GA4 metrics at time of this run)
+   10. Next Month Recommendations (3 actionable items)
 ```
 
 ### Task 3: Week 1 Report
@@ -598,44 +615,184 @@ Save to: `reports/WEEK-1-REPORT-YYYY-MM-DD.md`
 
 ---
 
-## Monthly Report Format
+## Monthly Report Formats
 
-Save to: `reports/MONTHLY-REPORT-YYYY-MM.md`
+Two reports are produced each month. Report 1 is saved **before execution** (after research + planning). Report 2 is saved **after execution**.
+
+---
+
+### Report 1 — Monthly Audit + Implementation Plan
+
+Save to: `reports/MONTHLY-AUDIT-PLAN-YYYY-MM.md`
 
 ```markdown
-# Monthly Report — {MONTH YEAR} — {CLIENT_NAME}
+# Monthly SEO Audit & Implementation Plan — {MONTH YEAR} — {CLIENT_NAME}
 **Month {N} of {CAMPAIGN_DURATION} | Platform: {PLATFORM}**
 **Produced by:** RightClick:AI / AI SEO Pipeline
 
-## 1. Blogs Published This Month
-| Week | Post Title | Destination | Status |
+---
+
+## Part 1 — Audit
+
+### Health Score
+| Metric | This Month | Last Month | Delta |
+|---|---|---|---|
+| SEO Health Score | /100 | /100 | +/- N |
+| SEO Title Coverage | % | % | +/-% |
+| Meta Description Coverage | % | % | +/-% |
+| Schema Coverage | % | % | +/-% |
+
+### Top Issues Found
+| Priority | Page / Item | Issue | Recommended Fix |
+|---|---|---|---|
+| HIGH | | | |
+| MED | | | |
+
+### CTR Gaps (GSC)
+| Query | Impressions | CTR | Expected CTR | Gap |
+|---|---|---|---|---|
+
+### New Keyword Opportunities
+| Keyword | Intent | Difficulty | Opportunity |
 |---|---|---|---|
 
-Total this month: {N} | Total to date: {N}
-
-## 2. On-Page Changes This Month
-| Category | Changes Made | API Used |
+### Regressions vs Prior Snapshot
+| Item | Previously Fixed | Current State |
 |---|---|---|
-| SEO Titles | N | {PLATFORM} API |
 
-## 3. Performance Movement
-| Metric | Last Month | This Month | Change |
+### Organic Baseline (this month)
+| Metric | Value | Source |
+|---|---|---|
+| Organic sessions (last 30d) | N | GA4 |
+| Top page by organic clicks | /[page] | GSC |
+| Top keyword by impressions | [keyword] | GSC |
+| Average position | X.X | GSC |
+| Average CTR | X.X% | GSC |
+
+---
+
+## Part 2 — Implementation Plan
+
+### Plan Summary
+| Category | Changes Proposed | Via API | Manual Required |
 |---|---|---|---|
-| Organic sessions (30d) | | | |
-| SEO Health Score | /100 | /100 | |
-| Avg position (top 10) | | | |
+| A — SEO Titles | N | N | N |
+| B — Meta Descriptions | N | N | N |
+| C — Blog SEO Titles | N | N | N |
+| D — Blog Meta Descriptions | N | N | N |
+| F — Schema | N | N | N |
+| G — Manual Only | N | — | N |
 
-## 4. Top Keyword Movements
-| Query | Position Change | CTR Change |
+### Category A — SEO Titles
+| Page / Item | Before | After | Priority |
+|---|---|---|---|
+
+### Category B — Meta Descriptions
+| Page / Item | Before | After | Priority |
+|---|---|---|---|
+
+### Category C — Blog SEO Titles
+| Post | Before | After | Priority |
+|---|---|---|---|
+
+### Category D — Blog Meta Descriptions
+| Post | Before | After | Priority |
+|---|---|---|---|
+
+### Category F — Schema
+| Page / Item | Schema Type | Action | Details |
+|---|---|---|---|
+
+### Category G — Manual Only (cannot be done via API)
+| Priority | Page / Item | Change Required | How to Apply |
+|---|---|---|---|
+
+### Deferred from Last Month
+| Priority | Item | Reason Carried Forward |
 |---|---|---|
 
-## 5. Outstanding Items
-| Priority | Item |
-|---|---|
+→ Awaiting approval to execute Categories A–F via {PLATFORM} API.
+```
 
-## 6. Next Month Plan
-- Blog topics queued: [list]
-- On-page priorities: [list]
+---
+
+### Report 2 — Post-Implementation Comparison
+
+Save to: `reports/MONTHLY-POST-IMPL-YYYY-MM.md`
+
+Follows the **3blog-seo-first-run Phase 6 structure** exactly — 10 sections:
+
+```markdown
+# Monthly Post-Implementation Report — {MONTH YEAR} — {CLIENT_NAME}
+**Month {N} of {CAMPAIGN_DURATION} | Platform: {PLATFORM}**
+**Produced by:** RightClick:AI / AI SEO Pipeline
+
+## 1. Run Summary
+| Metric | Before | After | Delta |
+|---|---|---|---|
+| SEO Health Score | X/100 | X/100 | +/- N |
+| SEO Title Coverage | X% | X% | +/-% |
+| Meta Description Coverage | X% | X% | +/-% |
+| Schema Coverage | X% | X% | +/-% |
+| Organic Sessions (last 30d) | N | N | baseline |
+| Blog Posts Live | N | N | +N this month |
+
+## 2. On-Page Changes Applied (N total)
+
+### SEO Titles Changed
+| Page / Item | Before | After |
+|---|---|---|
+
+### Meta Descriptions Changed
+| Page / Item | Before | After |
+|---|---|---|
+
+### Schema Added / Updated
+| Page / Item | Schema Type | Action | Details |
+|---|---|---|---|
+
+### Other On-Page Changes
+| Page / Item | Field | Before | After |
+|---|---|---|---|
+
+## 3. Blog Posts Published as Drafts
+| # | Title | Slug | Primary Keyword | Word Count | CMS Status |
+|---|---|---|---|---|---|
+
+## 4. Items NOT Updated (and Why)
+| Priority | Page / Item | Proposed Change | Reason Not Done | Action Required |
+|---|---|---|---|---|
+
+Reason categories: API limitation | Live URL risk | Theme-level | Manual dashboard | Scope | Error
+
+## 5. Resolved Items ✅
+(These will NOT be re-recommended in future runs)
+
+## 6. Outstanding Priorities ⏳
+(Carry into next month)
+| Priority | Page / Item | Issue | Proposed Action | Reason Deferred |
+|---|---|---|---|---|
+
+## 7. Regressions ⚠️
+(Items previously fixed that have broken again)
+
+## 8. Keywords Targeted This Month
+| Keyword | Type | Intent | Target Page | Action |
+|---|---|---|---|---|
+
+## 9. Organic Baseline
+| Metric | Value | Source |
+|---|---|---|
+| Organic sessions (last 30d) | N | GA4 |
+| Top page by organic clicks | /[page] | GSC |
+| Top keyword by impressions | [keyword] | GSC |
+| Average position | X.X | GSC |
+| Average CTR | X.X% | GSC |
+
+## 10. Next Month Recommendations
+1. [Highest priority outstanding item]
+2. [Second priority — new keyword opportunity or GSC gap]
+3. [Third priority — content or schema gap]
 ```
 
 ---

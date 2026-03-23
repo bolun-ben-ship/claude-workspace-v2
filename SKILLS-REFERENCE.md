@@ -85,12 +85,12 @@ Run from the **client workspace** (`clients/{domain}/`).
 **Platform detection:** Reads `CMS:` field from `## Platform` in `CLAUDE.md` → routes to Shopline REST API, Webflow Data API + MCP, or WordPress REST API. Unknown platforms produce plans + local HTML only.
 **Questionnaire asks:** Duration (3/6/12 months), blog destination (platform-specific collection/category picker), topic focus, approval mode.
 **Weekly (automated):** 5 blog posts written + pushed to {CMS} as drafts.
-**Monthly (automated):** Fresh GSC/GA4 + on-page plan + approval gate + execute changes + monthly report.
-**Reports:** Week 1 report, monthly reports, final engagement report.
+**Monthly (automated):** Fresh GSC/GA4 + SEO audit + on-page plan → Report 1 (MONTHLY-AUDIT-PLAN) → approval gate → execute changes → Report 2 (MONTHLY-POST-IMPL, Phase 6 structure).
+**Reports:** Week 1 report · 2 reports per month (audit+plan before, post-impl after) · final engagement report.
 **Extensible:** Adding a new platform = add a row to the routing table + new execution blocks.
 **Uses:** Claude Code scheduled tasks.
 **Credentials needed:** Platform token (`SHOPLINE_*` / `WEBFLOW_*` / `WP_*`) + `{CLIENT}_GOOGLE_KEY` + `PERPLEXITY_API_KEY` (or `OPENAI_API_KEY` for aexphl).
-**Output files:** All subfolders + `reports/WEEK-1-REPORT-*.md`, `reports/MONTHLY-REPORT-*.md`.
+**Output files:** All subfolders + `reports/WEEK-1-REPORT-*.md`, `reports/MONTHLY-AUDIT-PLAN-*.md`, `reports/MONTHLY-POST-IMPL-*.md`.
 
 ---
 

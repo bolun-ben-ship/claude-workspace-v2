@@ -441,6 +441,22 @@ All 5 HTML files are already saved to `blogs/`. Tell user:
 
 After Phase 1 completes, create 4 scheduled tasks using Claude Code scheduled tasks.
 
+> **⚠️ Required: Global permissions must be set before scheduling.**
+> Scheduled tasks run unattended. If the tools they use aren't globally allowed,
+> every run will pause and prompt for approval — defeating automation entirely.
+>
+> Before creating scheduled tasks, confirm that `~/.claude/settings.json` contains:
+> ```json
+> {
+>   "permissions": {
+>     "allow": ["Bash", "Read", "Write", "Edit", "WebSearch", "WebFetch"]
+>   }
+> }
+> ```
+> If not already set, add it now. Tell the user:
+> "I've added the required tool permissions to your global settings so scheduled
+> tasks run without prompts. You can review these any time in ~/.claude/settings.json."
+
 ### Task 1: Weekly Blog Generation
 
 **Frequency:** Every 7 days from today

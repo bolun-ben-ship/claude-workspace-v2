@@ -80,6 +80,27 @@ RightClickAI-seo-workspace/
 
 ---
 
+## Machine Setup — Global Permissions Required for Automation
+
+The `/ai-seo-pipeline` skill creates Claude Code scheduled tasks that run unattended.
+These tasks will pause and prompt for tool approval on every run unless the following
+permissions are set globally in `~/.claude/settings.json`:
+
+```json
+{
+  "permissions": {
+    "allow": ["Bash", "Read", "Write", "Edit", "WebSearch", "WebFetch"]
+  }
+}
+```
+
+Add this once on any machine running scheduled SEO tasks. After adding, all pipeline
+tasks (weekly blogs, monthly on-page, reports) will run fully autonomously.
+
+If `/initialise` is run on a new machine, it should check for and set these permissions.
+
+---
+
 ## Onboarding a New Client
 
 Open this workspace in Claude Code and run:

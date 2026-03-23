@@ -38,6 +38,23 @@
 - Webflow MCP is required for executing CMS changes
 - Config: `.mcp.json` in this folder (reads token from `$WEBFLOW_AEXPHL_TOKEN`)
 
+## Active AI SEO Pipeline
+
+**Campaign:** 2026-03-23 → 2026-06-23 (3 months)
+**Webflow collection ID:** `66104d468c50c15134bf0447` (Blog Posts)
+
+Scheduled tasks running (see Scheduled tab in Claude Code sidebar):
+- `aexphl-weekly-blogs` — every Monday 9am, writes + pushes 5 blog drafts
+- `aexphl-monthly-onpage` — 23rd of each month 9am, full audit + on-page execution
+- `aexphl-week1-report` — one-off 2026-03-30
+- `aexphl-final-report` — one-off 2026-06-23
+
+**Required:** `~/.claude/settings.json` must have `Bash`, `Read`, `Write`, `Edit`, `WebSearch`, `WebFetch` in `permissions.allow` — otherwise tasks will prompt for approval on every run.
+
+**Manual items still outstanding:**
+- noIndex `/landing-page` and `/landing-page-v2` in Webflow Designer
+- 4 schema JSON-LD blocks (see `implementation/IMPLEMENTATION-PLAN-2026-03-23.md` Category F)
+
 ---
 
 ## Context Loading Rules

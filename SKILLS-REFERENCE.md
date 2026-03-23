@@ -89,7 +89,7 @@ Run from the **client workspace** (`clients/{domain}/`).
 **Reports:** Week 1 report, monthly reports, final engagement report.
 **Extensible:** Adding a new platform = add a row to the routing table + new execution blocks.
 **Uses:** Claude Code scheduled tasks.
-**Credentials needed:** Platform token (`SHOPLINE_*` / `WEBFLOW_*` / `WP_*`) + `{CLIENT}_GOOGLE_KEY` + `OPENAI_API_KEY`.
+**Credentials needed:** Platform token (`SHOPLINE_*` / `WEBFLOW_*` / `WP_*`) + `{CLIENT}_GOOGLE_KEY` + `PERPLEXITY_API_KEY` (or `OPENAI_API_KEY` for aexphl).
 **Output files:** All subfolders + `reports/WEEK-1-REPORT-*.md`, `reports/MONTHLY-REPORT-*.md`.
 
 ---
@@ -179,7 +179,10 @@ Pull 30-day Google Analytics 4 data. Sessions by channel, top landing pages, bou
 ### `/last30days`
 Research any topic across Reddit, X, YouTube, TikTok, Instagram, Hacker News, Polymarket. Produces expert synthesis.
 **Invoke as:** `/last30days sleep products mattress`
-**Needs:** `OPENAI_API_KEY` + Python scripts from `github.com/mvanhorn/last30days-skill`
+**Needs:** Python scripts from `github.com/mvanhorn/last30days-skill` + Reddit backend key (see below)
+**Reddit backend (per-client, set in `.claude/last30days.env`):**
+- `REDDIT_BACKEND=perplexity` → uses `PERPLEXITY_API_KEY` — default for all clients except aexphl
+- `REDDIT_BACKEND=openai` → uses `OPENAI_API_KEY` — aexphl only
 
 ---
 
@@ -349,7 +352,8 @@ bash seo-workflow/install.sh --audit  # audit only
 | `SHOPLINE_{CLIENT}_TOKEN` env var | shopline-onpage-implement, 3blog-pipeline, ai-seo-pipeline |
 | `WEBFLOW_{CLIENT}_TOKEN` env var | webflow-onpage-implement |
 | `{CLIENT}_GOOGLE_KEY` env var → path to JSON key file | gsc-report, ga4-report, all orchestrators |
-| `OPENAI_API_KEY` env var | last30days |
+| `PERPLEXITY_API_KEY` env var | last30days (all clients except aexphl) |
+| `OPENAI_API_KEY` env var | last30days (aexphl only — `REDDIT_BACKEND=openai` in `.claude/last30days.env`) |
 | Webflow MCP connected (`.mcp.json`) | webflow-onpage-implement |
 | Python packages: `google-analytics-data`, `google-api-python-client`, `google-auth`, `requests` | gsc-report, ga4-report |
 | Python scripts from `github.com/mvanhorn/last30days-skill` | last30days |

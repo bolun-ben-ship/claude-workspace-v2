@@ -85,7 +85,7 @@ for var in OWLLIGHT_GOOGLE_KEY AEXPHL_GOOGLE_KEY; do
 done
 
 # Token vars — just need to be non-empty
-for var in SHOPLINE_OWLLIGHT_TOKEN WEBFLOW_AEXPHL_TOKEN OPENAI_API_KEY; do
+for var in SHOPLINE_OWLLIGHT_TOKEN WEBFLOW_AEXPHL_TOKEN PERPLEXITY_API_KEY OPENAI_API_KEY; do
   [ -n "${!var:-}" ] && echo "$var ✓" || echo "$var ✗ — not set"
 done
 ```
@@ -98,7 +98,8 @@ For every missing env var, output the exact line to add to `~/.zshrc`:
 | `AEXPHL_GOOGLE_KEY` | Path to AEXPHL Google service account JSON | `export AEXPHL_GOOGLE_KEY="/path/to/aexphl-key.json"` |
 | `SHOPLINE_OWLLIGHT_TOKEN` | Shopline Admin API token for Owllight | `export SHOPLINE_OWLLIGHT_TOKEN="your-token-here"` |
 | `WEBFLOW_AEXPHL_TOKEN` | Webflow API token for AEXPHL | `export WEBFLOW_AEXPHL_TOKEN="your-token-here"` |
-| `OPENAI_API_KEY` | OpenAI API key (used by /last30days) | `export OPENAI_API_KEY="your-key-here"` |
+| `PERPLEXITY_API_KEY` | Perplexity API key (used by /last30days for all clients except aexphl) | `export PERPLEXITY_API_KEY="your-key-here"` |
+| `OPENAI_API_KEY` | OpenAI API key (used by /last30days for aexphl only) | `export OPENAI_API_KEY="your-key-here"` |
 
 After listing missing vars, remind the user:
 ```
@@ -177,7 +178,8 @@ Environment variables:
   AEXPHL_GOOGLE_KEY            ✓/✗
   SHOPLINE_OWLLIGHT_TOKEN      ✓/✗
   WEBFLOW_AEXPHL_TOKEN         ✓/✗
-  OPENAI_API_KEY               ✓/✗
+  PERPLEXITY_API_KEY           ✓/✗
+  OPENAI_API_KEY               ✓/✗  (aexphl /last30days only)
 
 Credential files:
   Owllight JSON key            ✓/✗

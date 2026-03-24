@@ -50,6 +50,7 @@ Current keys registered for this workspace:
 - `WEBFLOW_AEXPHL_TOKEN` — Webflow API (in settings.json ✅)
 - `AEXPHL_GOOGLE_KEY` — Google credentials (GSC + GA4)
 - `MAILCHIMP_API_KEY` — Mailchimp (in settings.json ✅)
+- `MONDAY_API_KEY` — Monday.com (in settings.json ✅)
 - `CALENDLY_API_KEY` — Calendly (add when ready — see Mailchimp Sync section)
 
 When adding a new key, update both files immediately.
@@ -87,14 +88,27 @@ Scheduled tasks running (see Scheduled tab in Claude Code sidebar):
 - **Scheduled task:** `aexphl-mailchimp-sync` (hourly)
 
 **Tags applied:**
-- `source:webflow-form` — contacts from Webflow contactForm
-- `source:calendly` — contacts from Calendly bookings (teamaexphl)
+- `source:webflow-form` — Webflow contactForm submissions
+- `source:calendly` + `calendly:{event-type}` — Calendly bookings, tagged by event name
+  - `calendly:discovery-call`, `calendly:borrowing-capacity`, `calendly:next-available`, etc.
+- `source:whatsapp-manychat` + `lead-type:high-intent` — ManyChat completed intake (native MC integration)
+- `source:monday-import` + `monday:lead` + `monday-status:{status}` — Monday.com Leads board (1,164 items)
+- `source:monday-import` + `monday:customer` — Monday.com Customers board (801 items)
+
+**Monday.com boards mapped (2026-03-24):**
+- `1907973121` Leads (1,164) → imports with lead status tag
+- `1917616922` Customers (801) → imports with employment/immigration data as notes
+- `1917636634` Referrers (30) → **SKIPPED** (referral partners, not leads)
+- All other boards → **SKIPPED** (operational/internal)
 
 **To activate Calendly sync:**
 1. Get Personal Access Token from [app.calendly.com/integrations/api_webhooks](https://app.calendly.com/integrations/api_webhooks)
 2. Add to `~/.zshrc`: `export CALENDLY_API_KEY="your-token"`
 3. Add to `~/.claude/settings.json` env block: `"CALENDLY_API_KEY": "your-token"`
 4. Restart Claude Code — sync activates automatically on next hourly run
+
+**To re-run Monday.com import** (if needed):
+Delete `monday_imported` key from `scripts/mailchimp-sync-state.json`, then trigger the sync.
 
 ---
 

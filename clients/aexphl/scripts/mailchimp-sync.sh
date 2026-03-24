@@ -99,7 +99,7 @@ add_to_mailchimp() {
   notes=$(echo "$notes" | tr -d '"\\' | cut -c1-500)
 
   local email_hash
-  email_hash=$(echo -n "${email,,}" | md5)
+  email_hash=$(echo -n "$email" | tr '[:upper:]' '[:lower:]' | md5)
 
   # --- Step 1: Upsert the member ---
   local response http_code body
@@ -374,6 +374,30 @@ print(d.get('pagination', {}).get('next_page_token', ''))
 
 # =============================================================================
 # PART 3 — Monday.com Historical Import (one-time, checks state flag)
+#
+# Board mapping (discovered 2026-03-24):
+#   1907973121  Leads       — 1,164 items  → tag: source:monday-import, monday:lead
+#   1917616922  Customers   —   801 items  → tag: source:monday-import, monday:customer
+#   1917636634  Referrers   —    30 items  → SKIPPED (referral partners, not leads)
+#   All other boards        — internal/operational, SKIPPED
+#
+# Leads field map:
+#   lead_email          → email
+#   name (item)         → full name
+#   phone_mkq1vacq      → WhatsApp number
+#   dropdown            → Interested Services
+#   lead_status         → Lead Status (also applied as tag)
+#   text6               → Campaign Source (note)
+#   short_textc63e8txn  → Lead Capture / original source (note)
+#   long_text5          → Details (note)
+#   text_mkrcsr5t       → Location (note)
+#
+# Customers field map:
+#   email               → email
+#   name (item)         → full name
+#   phone               → phone (mirror field — may be empty)
+#   dropdown8           → Employment Status (note)
+#   dropdown_1          → Immigration Status (note)
 # =============================================================================
 sync_monday() {
   if [ -z "${MONDAY_API_KEY:-}" ]; then
@@ -381,7 +405,6 @@ sync_monday() {
     return
   fi
 
-  # Only run once unless forced
   local already_imported
   already_imported=$(python3 -c "
 import json, os
@@ -398,52 +421,103 @@ except:
   fi
 
   log "--- Monday.com one-time historical import ---"
-
-  # Step 1: Get all boards
-  local boards_response
-  boards_response=$(curl -s \
-    -H "Authorization: $MONDAY_API_KEY" \
-    -H "Content-Type: application/json" \
-    -X POST "https://api.monday.com/v2" \
-    -d '{"query": "{ boards(limit: 50) { id name } }"}')
-
-  log "Boards found:"
-  echo "$boards_response" | python3 -c "
-import sys, json
-d = json.load(sys.stdin)
-boards = d.get('data', {}).get('boards', [])
-for b in boards:
-    print(f'  {b[\"id\"]} | {b[\"name\"]}')
-" 2>/dev/null | while IFS= read -r line; do log "$line"; done
-
-  # Step 2: Pull items from all boards, look for email columns
   local total_added=0
 
-  local board_ids
-  board_ids=$(echo "$boards_response" | python3 -c "
+  # ---- 3a: Leads board -------------------------------------------------------
+  log "Importing Leads board (1907973121)..."
+  local cursor=""
+  while true; do
+    local cursor_clause=""
+    [ -n "$cursor" ] && cursor_clause=", cursor: \"${cursor}\""
+
+    local resp
+    resp=$(curl -s \
+      -H "Authorization: $MONDAY_API_KEY" \
+      -H "Content-Type: application/json" \
+      -X POST "https://api.monday.com/v2" \
+      -d "{\"query\": \"{ boards(ids: 1907973121) { items_page(limit: 100${cursor_clause}) { cursor items { name column_values(ids: [\\\"lead_email\\\", \\\"phone_mkq1vacq\\\", \\\"dropdown\\\", \\\"lead_status\\\", \\\"text6\\\", \\\"short_textc63e8txn\\\", \\\"long_text5\\\", \\\"text_mkrcsr5t\\\"]) { id text } } } } }\"}")
+
+    echo "$resp" | python3 -c "
 import sys, json
 d = json.load(sys.stdin)
-boards = d.get('data', {}).get('boards', [])
-print('\n'.join([b['id'] for b in boards]))
+try:
+    items = d['data']['boards'][0]['items_page']['items']
+except:
+    sys.exit(0)
+
+field_map = {
+    'lead_email': 'email',
+    'phone_mkq1vacq': 'phone',
+    'dropdown': 'services',
+    'lead_status': 'status',
+    'text6': 'campaign_source',
+    'short_textc63e8txn': 'lead_capture',
+    'long_text5': 'details',
+    'text_mkrcsr5t': 'location',
+}
+
+for item in items:
+    fields = {field_map.get(cv['id'], cv['id']): (cv.get('text') or '').strip()
+              for cv in item.get('column_values', [])}
+
+    email = fields.get('email', '')
+    if not email:
+        continue
+
+    name_parts = item['name'].split(' ', 1)
+    first_name = name_parts[0]
+    last_name = name_parts[1] if len(name_parts) > 1 else ''
+    phone = fields.get('phone', '')
+    status = fields.get('status', '')
+
+    notes_parts = []
+    if fields.get('services'):     notes_parts.append(f'Interested in: {fields[\"services\"]}')
+    if fields.get('location'):     notes_parts.append(f'Location: {fields[\"location\"]}')
+    if fields.get('campaign_source'): notes_parts.append(f'Campaign: {fields[\"campaign_source\"]}')
+    if fields.get('lead_capture'): notes_parts.append(f'Lead capture: {fields[\"lead_capture\"]}')
+    if fields.get('details'):      notes_parts.append(fields['details'][:200])
+
+    # Build tag string: source + lead status slug
+    status_slug = status.lower().replace(' ', '-').replace('/', '-') if status else ''
+    tags = 'source:monday-import,monday:lead'
+    if status_slug:
+        tags += f',monday-status:{status_slug}'
+
+    notes = ' | '.join(notes_parts)
+    print(f'{email}|||{first_name}|||{last_name}|||{phone}|||{tags}|||{notes}')
+" 2>/dev/null | while IFS='|||' read -r email first_name last_name phone tags notes; do
+      [ -z "$email" ] && continue
+      add_to_mailchimp "$email" "$first_name" "$last_name" "$phone" "$tags" "$notes"
+      ((total_added++)) || true
+    done
+
+    local next_cursor
+    next_cursor=$(echo "$resp" | python3 -c "
+import sys,json
+d=json.load(sys.stdin)
+try: print(d['data']['boards'][0]['items_page']['cursor'] or '')
+except: print('')
 " 2>/dev/null || echo "")
+    [ -z "$next_cursor" ] || [ "$next_cursor" = "None" ] && break
+    cursor="$next_cursor"
+  done
+  log "Leads board done"
 
-  while IFS= read -r board_id; do
-    [ -z "$board_id" ] && continue
+  # ---- 3b: Customers board ---------------------------------------------------
+  log "Importing Customers board (1917616922)..."
+  cursor=""
+  while true; do
+    local cursor_clause=""
+    [ -n "$cursor" ] && cursor_clause=", cursor: \"${cursor}\""
 
-    # Pull items with column values (paginated, 100 at a time)
-    local cursor=""
-    while true; do
-      local cursor_param=""
-      [ -n "$cursor" ] && cursor_param=", cursor: \"${cursor}\""
+    local resp
+    resp=$(curl -s \
+      -H "Authorization: $MONDAY_API_KEY" \
+      -H "Content-Type: application/json" \
+      -X POST "https://api.monday.com/v2" \
+      -d "{\"query\": \"{ boards(ids: 1917616922) { items_page(limit: 100${cursor_clause}) { cursor items { name column_values(ids: [\\\"email\\\", \\\"phone\\\", \\\"dropdown8\\\", \\\"dropdown_1\\\", \\\"dropdown_12\\\"]) { id text } } } } }\"}")
 
-      local items_response
-      items_response=$(curl -s \
-        -H "Authorization: $MONDAY_API_KEY" \
-        -H "Content-Type: application/json" \
-        -X POST "https://api.monday.com/v2" \
-        -d "{\"query\": \"{ boards(ids: ${board_id}) { items_page(limit: 100${cursor_param}) { cursor items { id name column_values { id text type } } } } }\"}")
-
-      echo "$items_response" | python3 -c "
+    echo "$resp" | python3 -c "
 import sys, json
 d = json.load(sys.stdin)
 try:
@@ -452,73 +526,56 @@ except:
     sys.exit(0)
 
 for item in items:
-    email = ''
-    first_name = ''
-    last_name = ''
-    phone = ''
-    notes_parts = [f'Monday board ID: $board_id']
+    fields = {cv['id']: (cv.get('text') or '').strip()
+              for cv in item.get('column_values', [])}
 
-    for col in item.get('column_values', []):
-        text = col.get('text', '') or ''
-        col_id = col.get('id', '').lower()
-        col_type = col.get('type', '').lower()
+    email = fields.get('email', '').split(' ')[0]  # Monday appends label
+    if not email or '@' not in email:
+        continue
 
-        if col_type == 'email' and text and not email:
-            email = text.split(' ')[0]  # Monday sometimes appends label
-        elif col_type == 'phone' and text:
-            phone = text
-        elif 'name' in col_id and text and not first_name:
-            parts = text.split(' ', 1)
-            first_name = parts[0]
-            last_name = parts[1] if len(parts) > 1 else ''
-        elif text:
-            notes_parts.append(f'{col_id}: {text}')
+    name_parts = item['name'].split(' ', 1)
+    first_name = name_parts[0]
+    last_name = name_parts[1] if len(name_parts) > 1 else ''
+    phone = fields.get('phone', '')
 
-    # Fallback: use item name as contact name
-    if not first_name and item.get('name'):
-        parts = item['name'].split(' ', 1)
-        first_name = parts[0]
-        last_name = parts[1] if len(parts) > 1 else ''
+    notes_parts = []
+    if fields.get('dropdown8'):  notes_parts.append(f'Employment: {fields[\"dropdown8\"]}')
+    if fields.get('dropdown_1'): notes_parts.append(f'Immigration: {fields[\"dropdown_1\"]}')
+    if fields.get('dropdown_12'):notes_parts.append(f'Type: {fields[\"dropdown_12\"]}')
+    notes = ' | '.join(notes_parts)
 
-    notes = ' | '.join(notes_parts[:8])  # cap notes length
     print(f'{email}|||{first_name}|||{last_name}|||{phone}|||{notes}')
 " 2>/dev/null | while IFS='|||' read -r email first_name last_name phone notes; do
-          [ -z "$email" ] && continue
-          add_to_mailchimp "$email" "$first_name" "$last_name" "$phone" "source:monday-import" "$notes"
-          ((total_added++)) || true
-        done
-
-      # Check for next page cursor
-      local next_cursor
-      next_cursor=$(echo "$items_response" | python3 -c "
-import sys, json
-d = json.load(sys.stdin)
-try:
-    print(d['data']['boards'][0]['items_page']['cursor'] or '')
-except:
-    print('')
-" 2>/dev/null || echo "")
-
-      [ -z "$next_cursor" ] || [ "$next_cursor" = "None" ] && break
-      cursor="$next_cursor"
+      [ -z "$email" ] && continue
+      add_to_mailchimp "$email" "$first_name" "$last_name" "$phone" "source:monday-import,monday:customer" "$notes"
+      ((total_added++)) || true
     done
 
-  done <<< "$board_ids"
+    local next_cursor
+    next_cursor=$(echo "$resp" | python3 -c "
+import sys,json
+d=json.load(sys.stdin)
+try: print(d['data']['boards'][0]['items_page']['cursor'] or '')
+except: print('')
+" 2>/dev/null || echo "")
+    [ -z "$next_cursor" ] || [ "$next_cursor" = "None" ] && break
+    cursor="$next_cursor"
+  done
+  log "Customers board done"
 
-  # Mark as imported so it doesn't run again
+  # Mark imported so it never runs again
   python3 -c "
 import json, os
-state_file = '$STATE_FILE'
+f = '$STATE_FILE'
 try:
-    d = json.load(open(state_file)) if os.path.exists(state_file) else {}
+    d = json.load(open(f)) if os.path.exists(f) else {}
 except:
     d = {}
 d['monday_imported'] = 'true'
-json.dump(d, open(state_file, 'w'), indent=2)
+json.dump(d, open(f, 'w'), indent=2)
 "
-
-  log "Monday.com import complete — $total_added contacts imported"
-  log "Monday.com import will NOT run again automatically (state flag set)"
+  log "Monday.com import complete — $total_added total contacts"
+  log "Import flag set — will not run again automatically"
 }
 
 # =============================================================================

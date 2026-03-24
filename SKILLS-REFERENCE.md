@@ -341,7 +341,25 @@ bash seo-workflow/install.sh --audit  # audit only
 | `{CLIENT}_GOOGLE_KEY` env var → path to JSON key file | gsc-report, ga4-report, all orchestrators |
 | `PERPLEXITY_API_KEY` env var | last30days (all clients except aexphl) |
 | `OPENAI_API_KEY` env var | last30days (aexphl only — `REDDIT_BACKEND=openai` in `.claude/last30days.env`) |
+| `MAILCHIMP_API_KEY` env var | aexphl mailchimp-sync script |
+| `CALENDLY_API_KEY` env var | aexphl mailchimp-sync script (optional — activates Calendly sync) |
 | Webflow MCP connected (`.mcp.json`) | webflow-onpage-implement |
 | Python packages: `google-analytics-data`, `google-api-python-client`, `google-auth`, `requests` | gsc-report, ga4-report |
 | Python scripts from `github.com/mvanhorn/last30days-skill` | last30days |
 | `python3`, `node`, `npx`, `pip3` in PATH | various |
+
+---
+
+## Client Automation Scripts
+
+Standalone scripts that run as scheduled tasks outside the SEO pipeline.
+
+### `aexphl` — Mailchimp Lead Sync
+**Script:** `clients/aexphl/scripts/mailchimp-sync.sh`
+**Scheduled task:** `aexphl-mailchimp-sync` (every hour)
+**What it does:** Polls Webflow form submissions + Calendly bookings since last run → upserts contacts into Mailchimp AEXPHL audience (`bba8715471`) with source tags.
+**Tags:** `source:webflow-form`, `source:calendly`
+**State:** `scripts/mailchimp-sync-state.json` — tracks last sync timestamps (no duplicates)
+**Log:** `scripts/mailchimp-sync.log`
+**Required env vars:** `WEBFLOW_AEXPHL_TOKEN`, `MAILCHIMP_API_KEY` (both in settings.json ✅)
+**Optional:** `CALENDLY_API_KEY` — add to activate Calendly sync (see aexphl CLAUDE.md)

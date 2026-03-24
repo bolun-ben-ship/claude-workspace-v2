@@ -38,6 +38,22 @@
 - Webflow MCP is required for executing CMS changes
 - Config: `.mcp.json` in this folder (reads token from `$WEBFLOW_AEXPHL_TOKEN`)
 
+## Env Vars — Two Places Required
+
+Claude Code's Bash tool does NOT source `~/.zshrc`. Any API key set only there will show as `NOT SET`.
+
+**Every key must be in BOTH:**
+1. `~/.zshrc` — for terminal sessions
+2. `~/.claude/settings.json` under the `env` block — for Claude Code Bash access
+
+Current keys registered for this workspace:
+- `WEBFLOW_AEXPHL_TOKEN` — Webflow API (in settings.json ✅)
+- `AEXPHL_GOOGLE_KEY` — Google credentials (GSC + GA4)
+- `MAILCHIMP_API_KEY` — Mailchimp (in settings.json ✅)
+- `CALENDLY_API_KEY` — Calendly (add when ready — see Mailchimp Sync section)
+
+When adding a new key, update both files immediately.
+
 ## Active AI SEO Pipeline
 
 **Campaign:** 2026-03-23 → 2026-06-23 (3 months)
@@ -48,6 +64,7 @@ Scheduled tasks running (see Scheduled tab in Claude Code sidebar):
 - `aexphl-monthly-onpage` — 23rd of each month 9am, full audit + on-page execution
 - `aexphl-week1-report` — one-off 2026-03-30
 - `aexphl-final-report` — one-off 2026-06-23
+- `aexphl-mailchimp-sync` — every hour, syncs Webflow form submissions + Calendly bookings → Mailchimp
 
 **Required:** `~/.claude/settings.json` must have `Bash`, `Read`, `Write`, `Edit`, `WebSearch`, `WebFetch` in `permissions.allow` — otherwise tasks will prompt for approval on every run.
 
@@ -57,6 +74,27 @@ Scheduled tasks running (see Scheduled tab in Claude Code sidebar):
 
 **Completed since pipeline launch:**
 - Internal linking — 46 links injected across 17 blog posts (6 published + 11 drafts) on 2026-03-24 via Webflow CMS API. Plan + report: `implementation/INTERNAL-LINKS-PLAN-2026-03-24.md` / `INTERNAL-LINKS-REPORT-2026-03-24.md`
+- Mailchimp lead sync — set up 2026-03-24, syncing Webflow forms + Calendly to AEXPHL audience (ID: `bba8715471`)
+
+---
+
+## Mailchimp Integration
+
+- **Audience:** AEXPHL (`bba8715471`) — `enquiry@aexphl.com`
+- **Sync script:** `scripts/mailchimp-sync.sh`
+- **State file:** `scripts/mailchimp-sync-state.json` (tracks last sync timestamp)
+- **Log file:** `scripts/mailchimp-sync.log`
+- **Scheduled task:** `aexphl-mailchimp-sync` (hourly)
+
+**Tags applied:**
+- `source:webflow-form` — contacts from Webflow contactForm
+- `source:calendly` — contacts from Calendly bookings (teamaexphl)
+
+**To activate Calendly sync:**
+1. Get Personal Access Token from [app.calendly.com/integrations/api_webhooks](https://app.calendly.com/integrations/api_webhooks)
+2. Add to `~/.zshrc`: `export CALENDLY_API_KEY="your-token"`
+3. Add to `~/.claude/settings.json` env block: `"CALENDLY_API_KEY": "your-token"`
+4. Restart Claude Code — sync activates automatically on next hourly run
 
 ---
 
@@ -102,8 +140,21 @@ Keeping it accurate means every session starts with correct context.
 
 ---
 
+## API Key Security
+
+**NEVER share API keys, tokens, or credentials in the chat.** If a key is accidentally shared:
+1. Immediately go to the platform and revoke/regenerate it
+2. Update `~/.zshrc` with the new key
+3. Update `~/.claude/settings.json` env block with the new key
+4. Restart Claude Code
+
+This applies to: Mailchimp API keys, Webflow tokens, Google credentials, Calendly tokens — everything.
+
+---
+
 ## Never
 - Generic broker tone ("we're here to help you achieve your dream home")
 - Fear-based framing
 - Hardcode tokens or credentials in any output file
+- Share API keys or tokens in chat — rotate immediately if this happens
 - Execute CMS or file changes without explicit approval

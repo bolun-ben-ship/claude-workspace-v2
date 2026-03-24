@@ -27,6 +27,8 @@ RightClickAI-seo-workspace/
 │       │   ├── current-data.md        ← live SEO coverage stats, analytics baseline
 │       │   ├── strategy.md            ← content & growth strategy
 │       │   └── personal-info.md       ← founder voice, values (optional)
+│       ├── scripts/                   ← client automation scripts
+│       │   └── mailchimp-sync.sh      ← Webflow + Calendly → Mailchimp lead sync (hourly)
 │       ├── Content & SEO/
 │       │   └── outputs/
 │       │       └── {platform}-{handle}/
@@ -187,9 +189,42 @@ Each client has their own isolated Google service account key:
 
 On a new machine: copy each client's JSON key file to `clients/{domain}/` and add the env var to `~/.zshrc`.
 
+### IMPORTANT: `~/.zshrc` alone is not enough
+
+Claude Code's Bash tool does NOT source `~/.zshrc`. Env vars set only in `~/.zshrc` will show as `NOT SET` when Claude runs Bash commands.
+
+**Every API key or token must be registered in TWO places:**
+
+1. `~/.zshrc` — for your terminal/shell sessions
+2. `~/.claude/settings.json` under the `env` block — for Claude Code
+
+```json
+{
+  "env": {
+    "MAILCHIMP_API_KEY": "your-key",
+    "WEBFLOW_AEXPHL_TOKEN": "your-token"
+  }
+}
+```
+
+When onboarding a new client or adding any new API key, always update both files.
+
+---
+
+## API Key Security
+
+**NEVER share API keys, tokens, or credentials in the chat.** If a key is accidentally shared:
+1. Immediately go to the platform and revoke/regenerate it
+2. Update `~/.zshrc` with the new key
+3. Update `~/.claude/settings.json` env block with the new key
+4. Restart Claude Code
+
+This applies to all credentials: Mailchimp, Webflow, Google, Calendly, etc.
+
 ---
 
 ## Never
 - Hardcode tokens or credentials in any output file or skill
+- Share API keys or tokens in chat — rotate immediately if this happens
 - Edit skills directly in `~/.claude/skills/` — always edit in `seo-workflow/` first
 - Make structural changes without an implementation plan saved to `outputs/`

@@ -270,7 +270,7 @@ Deep context loading for intensive work sessions. Reads ALL context files in ful
 **vs `/start-client`:** start-client = quick orientation (2 min). prime = full context saturation (reads everything).
 
 ### `/start-client`
-Load full client context and produce Client Briefing. Reads CLAUDE.md, all context files, scans output history, checks credentials.
+Load full client context and produce Client Briefing. Reads CLAUDE.md, all context files, scans output history, checks credentials, then runs live connection tests for CMS API (WordPress/Shopline/Webflow), Google Search Console, and Google Analytics 4. Any broken connection is flagged with a specific fix block in the briefing output.
 
 ---
 

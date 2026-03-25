@@ -4,6 +4,7 @@
 |---|---|---|---|---|---|
 | Owllight Sleep | Shopline | `~/Antigravity/RightClickAI-seo-workspace/clients/owllight` | owllight-sleep | SHOPLINE_OWLLIGHT_TOKEN | Active |
 | AEXPHL | Webflow | `clients/aexphl` | aexphl | WEBFLOW_AEXPHL_TOKEN | Active |
+| Lian Kok Electrical | WordPress | `clients/liankok.com` | liankok | WORDPRESS_LIANKOK_TOKEN | Active |
 
 ## How to Add a New Client
 1. Copy `client-template/` → `~/Antigravity/{client}-claude-workspace/`

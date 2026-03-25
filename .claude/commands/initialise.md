@@ -73,7 +73,7 @@ Check all known env vars for this workspace. For each one, report SET ✓ or NOT
 
 ```bash
 # Google credential file vars — must be set AND point to a real file
-for var in OWLLIGHT_GOOGLE_KEY AEXPHL_GOOGLE_KEY; do
+for var in OWLLIGHT_GOOGLE_KEY AEXPHL_GOOGLE_KEY LIANKOK_GOOGLE_KEY; do
   val="${!var:-}"
   if [ -z "$val" ]; then
     echo "$var ✗ — not set"
@@ -85,7 +85,7 @@ for var in OWLLIGHT_GOOGLE_KEY AEXPHL_GOOGLE_KEY; do
 done
 
 # Token vars — just need to be non-empty
-for var in SHOPLINE_OWLLIGHT_TOKEN WEBFLOW_AEXPHL_TOKEN PERPLEXITY_API_KEY OPENAI_API_KEY; do
+for var in SHOPLINE_OWLLIGHT_TOKEN WEBFLOW_AEXPHL_TOKEN WORDPRESS_LIANKOK_TOKEN PERPLEXITY_API_KEY OPENAI_API_KEY; do
   [ -n "${!var:-}" ] && echo "$var ✓" || echo "$var ✗ — not set"
 done
 ```
@@ -96,8 +96,10 @@ For every missing env var, output the exact line to add to `~/.zshrc`:
 |---|---|---|
 | `OWLLIGHT_GOOGLE_KEY` | Path to Owllight Google service account JSON | `export OWLLIGHT_GOOGLE_KEY="/path/to/owllight-key.json"` |
 | `AEXPHL_GOOGLE_KEY` | Path to AEXPHL Google service account JSON | `export AEXPHL_GOOGLE_KEY="/path/to/aexphl-key.json"` |
+| `LIANKOK_GOOGLE_KEY` | Path to Lian Kok Google service account JSON | `export LIANKOK_GOOGLE_KEY="/path/to/liankok-key.json"` |
 | `SHOPLINE_OWLLIGHT_TOKEN` | Shopline Admin API token for Owllight | `export SHOPLINE_OWLLIGHT_TOKEN="your-token-here"` |
 | `WEBFLOW_AEXPHL_TOKEN` | Webflow API token for AEXPHL | `export WEBFLOW_AEXPHL_TOKEN="your-token-here"` |
+| `WORDPRESS_LIANKOK_TOKEN` | WordPress REST API token for Lian Kok | `export WORDPRESS_LIANKOK_TOKEN="your-token-here"` |
 | `PERPLEXITY_API_KEY` | Perplexity API key (used by /last30days for all clients except aexphl) | `export PERPLEXITY_API_KEY="your-key-here"` |
 | `OPENAI_API_KEY` | OpenAI API key (used by /last30days for aexphl only) | `export OPENAI_API_KEY="your-key-here"` |
 
@@ -132,6 +134,7 @@ for dir in \
   "seo-workflow" \
   "clients/aexphl" \
   "clients/owllight" \
+  "clients/liankok.com" \
   "client-template" \
   "context" \
   "outputs" \
@@ -153,7 +156,8 @@ Output in this format:
  RightClick:AI — Workspace Initialisation
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Skills deployed:    24/24 ✓ / ✗ (N missing — re-run: bash seo-workflow/install.sh)
+Skills deployed:    23/23 ✓ / ✗ (N missing — re-run: bash seo-workflow/install.sh)
+Commands deployed:  2/2 ✓ / ✗ (start-client, prime — re-run: bash seo-workflow/install.sh)
 Agents deployed:    6/6 ✓ / ✗
 
 System tools:
@@ -176,8 +180,10 @@ Playwright Chromium:           ✓/✗
 Environment variables:
   OWLLIGHT_GOOGLE_KEY          ✓/✗
   AEXPHL_GOOGLE_KEY            ✓/✗
+  LIANKOK_GOOGLE_KEY           ✓/✗
   SHOPLINE_OWLLIGHT_TOKEN      ✓/✗
   WEBFLOW_AEXPHL_TOKEN         ✓/✗
+  WORDPRESS_LIANKOK_TOKEN      ✓/✗
   PERPLEXITY_API_KEY           ✓/✗
   OPENAI_API_KEY               ✓/✗  (aexphl /last30days only)
 

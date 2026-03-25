@@ -20,7 +20,8 @@ RightClickAI-seo-workspace/
 │       ├── {client-slug}-*.json       ← Google service account key (per-client, gitignored)
 │       ├── .claude/
 │       │   └── commands/
-│       │       └── start-client.md    ← /start-client command (pre-filled per client)
+│       │       ├── start-client.md    ← /start-client command (reference copy per client)
+│       │       └── prime.md           ← /prime command (reference copy per client)
 │       ├── context/
 │       │   ├── client-info.md         ← brand, products, competitors, audience
 │       │   ├── tone-guide.md          ← brand voice, writing rules (read by blog-write)
@@ -44,7 +45,8 @@ RightClickAI-seo-workspace/
 │   ├── CLAUDE.md
 │   ├── .claude/
 │   │   └── commands/
-│   │       └── start-client.md        ← /start-client template (placeholders filled by /onboard)
+│   │       ├── start-client.md        ← /start-client source (deployed globally by install.sh)
+│   │       └── prime.md               ← /prime source (deployed globally by install.sh)
 │   ├── context/
 │   │   ├── client-info.md
 │   │   ├── current-data.md
@@ -57,14 +59,15 @@ RightClickAI-seo-workspace/
 ├── outputs/                           ← agency-level implementation plans and reports
 │   └── IMPLEMENTATION-PLAN-YYYY-MM-DD.md
 ├── seo-workflow/                      ← skill library (source of truth)
-│   ├── install.sh                     ← deploys skills to ~/.claude/skills/
+│   ├── install.sh                     ← deploys skills → ~/.claude/skills/, agents → ~/.claude/agents/, commands → ~/.claude/commands/
 │   ├── agents/                        ← subagent configs
 │   ├── carousel/SKILL.md             ← Instagram carousel generator
 │   └── {skill-name}/SKILL.md         ← one folder per skill
 └── .claude/
     └── commands/
         ├── start-agency.md            ← /start-agency command
-        └── onboard.md                 ← /onboard command
+        ├── onboard.md                 ← /onboard command
+        └── initialise.md              ← /initialise command
 ```
 
 ---
@@ -76,10 +79,18 @@ RightClickAI-seo-workspace/
 - **GitHub** → commit and push `seo-workflow/` to version-control all skills
 - **New machine** → pull repo → run `install.sh` → all skills ready
 
+`install.sh` deploys three things:
+1. **Skills** → `~/.claude/skills/` (23 skills)
+2. **Agents** → `~/.claude/agents/` (6 subagents)
+3. **Global commands** → `~/.claude/commands/` (`start-client.md`, `prime.md`)
+
+Global commands are sourced from `client-template/.claude/commands/` and deployed to `~/.claude/commands/` so they appear in ALL Claude Code projects — including client subfolders that share this git root.
+
 ### Rules
 - **Always edit skills in `seo-workflow/`** — never directly in `~/.claude/skills/`
-- `~/.claude/skills/` is a deployment target — it gets overwritten on every `install.sh` run
-- After any skill edit, run `bash seo-workflow/install.sh` to deploy
+- **Always edit commands in `client-template/.claude/commands/`** — never directly in `~/.claude/commands/`
+- `~/.claude/skills/`, `~/.claude/agents/`, `~/.claude/commands/` are deployment targets — overwritten on every `install.sh` run
+- After any skill or command edit, run `bash seo-workflow/install.sh` to deploy
 
 ---
 

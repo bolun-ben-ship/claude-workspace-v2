@@ -11,6 +11,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_ROOT="$(dirname "$SCRIPT_DIR")"   # parent of seo-workflow/ = agency root
 SKILLS_DIR="$HOME/.claude/skills"
 AGENTS_DIR="$HOME/.claude/agents"
+COMMANDS_DIR="$HOME/.claude/commands"
 
 AUDIT_ONLY=false
 [[ "${1:-}" == "--audit" ]] && AUDIT_ONLY=true
@@ -95,8 +96,22 @@ if [ "$AUDIT_ONLY" = false ]; then
     fi
   done
 
+  # --- Global commands ---
+  echo "Installing global commands to $COMMANDS_DIR..."
+  mkdir -p "$COMMANDS_DIR"
+
+  COMMANDS_SOURCE="$WORKSPACE_ROOT/client-template/.claude/commands"
+  for cmd in start-client.md prime.md; do
+    if [ -f "$COMMANDS_SOURCE/$cmd" ]; then
+      cp "$COMMANDS_SOURCE/$cmd" "$COMMANDS_DIR/$cmd"
+      echo "  ✓ $cmd"
+    else
+      echo "  ✗ $cmd (not found in client-template — skipping)"
+    fi
+  done
+
   echo ""
-  echo "Done. Restart Claude Code to activate all skills."
+  echo "Done. Restart Claude Code to activate all skills and commands."
   echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo "⚠️  SKILLS-REFERENCE.md INTEGRITY CHECK"
@@ -140,6 +155,18 @@ run_audit() {
   else
     printf "Skills:         %d/%d deployed ✗\n" "$SKILLS_FOUND" "$SKILLS_TOTAL"
     ISSUES+=("Only $SKILLS_FOUND/$SKILLS_TOTAL skills deployed — run: bash install.sh")
+  fi
+
+  # --- Global commands ---
+  COMMANDS_FOUND=0
+  for cmd in start-client.md prime.md; do
+    [ -f "$COMMANDS_DIR/$cmd" ] && ((COMMANDS_FOUND++)) || true
+  done
+  if [ "$COMMANDS_FOUND" -eq 2 ]; then
+    printf "Commands:       2/2 deployed ✓\n"
+  else
+    printf "Commands:       %d/2 deployed ✗\n" "$COMMANDS_FOUND"
+    ISSUES+=("Only $COMMANDS_FOUND/2 global commands deployed — run: bash install.sh")
   fi
 
   # --- Agents ---
@@ -199,8 +226,10 @@ run_audit() {
 
   check_file_env  "OWLLIGHT_GOOGLE_KEY"
   check_file_env  "AEXPHL_GOOGLE_KEY"
+  check_file_env  "LIANKOK_GOOGLE_KEY"
   check_token_env "SHOPLINE_OWLLIGHT_TOKEN"
   check_token_env "WEBFLOW_AEXPHL_TOKEN"
+  check_token_env "WORDPRESS_LIANKOK_TOKEN"
   check_token_env "OPENAI_API_KEY"
   printf "Env vars:       %s\n" "$ENV_STATUS"
 

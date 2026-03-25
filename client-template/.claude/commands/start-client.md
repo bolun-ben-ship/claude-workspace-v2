@@ -73,7 +73,121 @@ Report: `[SET ✓]` / `[NOT SET ✗]` / `[SET but file not found ✗]` for each.
 
 ---
 
-## Step 5 — Produce Client Briefing
+## Step 5 — Verify connections
+
+Run live connection tests for every integration. Do not skip — these tests catch broken tokens and misconfigured APIs before any skill tries to use them.
+
+### 5a — CMS connection
+
+Use the platform value from CLAUDE.md to run the correct test.
+
+**WordPress:**
+```bash
+# Test 1: API reachable
+curl -s -o /dev/null -w "%{http_code}" "https://{WEBSITE}/wp-json/wp/v2/"
+
+# Test 2: Auth (Application Password — Basic auth with username:token)
+# Try common usernames against the stored token
+for user in admin administrator editor; do
+  code=$(curl -s -o /dev/null -w "%{http_code}" \
+    -u "$user:${!TOKEN_ENV_VAR}" \
+    "https://{WEBSITE}/wp-json/wp/v2/users/me")
+  echo "$user: $code"
+  [ "$code" = "200" ] && break
+done
+```
+
+Interpret results:
+- API 200 + auth 200 → `[CONNECTED ✓]`
+- API 200 + auth 401 → `[API reachable, auth failed ✗]` — token wrong or username mismatch
+- API non-200 → `[API unreachable ✗]`
+
+**Shopline:**
+```bash
+curl -s -o /dev/null -w "%{http_code}" \
+  -H "x-shopline-access-token: ${!TOKEN_ENV_VAR}" \
+  "https://openapi.shopline.com/openapi/2022-01/shops/info"
+```
+- 200 → `[CONNECTED ✓]`
+- 401/403 → `[Auth failed ✗]`
+
+**Webflow:**
+```bash
+curl -s -o /dev/null -w "%{http_code}" \
+  -H "Authorization: Bearer ${!TOKEN_ENV_VAR}" \
+  -H "accept-version: 1.0.0" \
+  "https://api.webflow.com/v2/sites"
+```
+- 200 → `[CONNECTED ✓]`
+- 401/403 → `[Auth failed ✗]`
+
+---
+
+### 5b — Google Search Console
+
+```python
+import os
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+
+key_path = os.environ.get("{GOOGLE_KEY_ENV}", "")
+try:
+    creds = service_account.Credentials.from_service_account_file(
+        key_path, scopes=["https://www.googleapis.com/auth/webmasters.readonly"]
+    )
+    service = build("searchconsole", "v1", credentials=creds)
+    sites = service.sites().list().execute()
+    site_list = [s['siteUrl'] for s in sites.get('siteEntry', [])]
+    print("CONNECTED:", site_list)
+except Exception as e:
+    print("ERROR:", e)
+```
+
+Interpret results:
+- `CONNECTED: [...]` with the client site in the list → `[CONNECTED ✓]`
+- `CONNECTED: []` (empty list) → `[Connected but service account has no GSC property access ✗]`
+- `403 ... API has not been used` → `[Search Console API not enabled in GCP ✗]`
+- `403 ... Permission denied` → `[Service account not granted GSC access ✗]`
+- Key file missing → `[Key file not found ✗]`
+
+---
+
+### 5c — Google Analytics 4
+
+```python
+import os
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+
+key_path = os.environ.get("{GOOGLE_KEY_ENV}", "")
+property_id = "{GA4_PROPERTY_ID}"  # from CLAUDE.md
+try:
+    creds = service_account.Credentials.from_service_account_file(
+        key_path, scopes=["https://www.googleapis.com/auth/analytics.readonly"]
+    )
+    service = build("analyticsdata", "v1beta", credentials=creds)
+    result = service.properties().runReport(
+        property=f"properties/{property_id}",
+        body={
+            "dateRanges": [{"startDate": "7daysAgo", "endDate": "today"}],
+            "metrics": [{"name": "sessions"}]
+        }
+    ).execute()
+    sessions = result['rows'][0]['metricValues'][0]['value'] if result.get('rows') else "0"
+    print("CONNECTED: sessions (7d) =", sessions)
+except Exception as e:
+    print("ERROR:", e)
+```
+
+Interpret results:
+- `CONNECTED: sessions (7d) = N` → `[CONNECTED ✓]`
+- `403 ... API has not been used` → `[Analytics Data API not enabled in GCP ✗]`
+- `403 ... Permission denied` → `[Service account not granted GA4 access ✗]`
+- Key file missing → `[Key file not found ✗]`
+
+---
+
+## Step 6 — Produce Client Briefing
 
 Output in this exact format:
 
@@ -115,6 +229,13 @@ Credentials:
   {GOOGLE_KEY_ENV}:   [SET ✓ / NOT SET ✗ / SET but file not found ✗]
   {TOKEN_ENV_VAR}:    [SET ✓ / NOT SET ✗]
 
+Connections:
+  {PLATFORM} API:          [CONNECTED ✓ / API reachable, auth failed ✗ / API unreachable ✗]
+  Google Search Console:   [CONNECTED ✓ / (reason for failure) ✗]
+  Google Analytics 4:      [CONNECTED ✓ / (reason for failure) ✗]
+
+[If any connection failed, print a fix block immediately after the table — see Notes]
+
 Voice & tone:
 [1–2 sentence summary from CLAUDE.md Voice & Tone section]
 
@@ -142,9 +263,58 @@ After the briefing, say:
 
 ## Notes
 
-- If any credential is NOT SET: remind the user to add it to `~/.zshrc`, run `source ~/.zshrc`, restart Claude Code
-- If context files are MISSING: run `/onboard` from the agency root to auto-populate from the live site, or fill manually
-- Platform routing: all CMS skills read the `CMS:` value from `## Platform` in CLAUDE.md:
-  - `Shopline` → REST API + `SHOPLINE_{CLIENT}_TOKEN`
-  - `Webflow` → Data API + MCP + `WEBFLOW_{CLIENT}_TOKEN`
-  - `WordPress` → WP REST API + `WP_{CLIENT}_TOKEN` (preview)
+### Credential issues
+- If any credential is NOT SET: remind the user to add it to both `~/.zshrc` AND `~/.claude/settings.json` env block, then restart Claude Code.
+
+### Connection fix blocks
+If any connection test failed, print a specific fix block immediately after the Connections table. Use the exact issue to give the right fix:
+
+**WordPress auth failed:**
+```
+Fix — WordPress token:
+  1. WordPress admin → Users → your user → Application Passwords
+  2. Generate a new password — copy the full string including spaces
+  3. Update WORDPRESS_{HANDLE}_TOKEN in ~/.zshrc and ~/.claude/settings.json
+  4. Restart Claude Code
+```
+
+**GSC — API not enabled:**
+```
+Fix — Search Console API:
+  1. Go to: https://console.cloud.google.com/apis/api/searchconsole.googleapis.com/overview?project={GCP_PROJECT_ID}
+  2. Click Enable
+  3. Wait ~2 minutes, then re-run /start-client
+```
+
+**GSC — service account has no access:**
+```
+Fix — GSC property access:
+  1. Go to Google Search Console → Settings → Users and permissions
+  2. Add {SERVICE_ACCOUNT_EMAIL} as a Full user
+  3. Re-run /start-client to verify
+```
+
+**GA4 — API not enabled:**
+```
+Fix — Analytics Data API:
+  1. Go to: https://console.cloud.google.com/apis/api/analyticsdata.googleapis.com/overview?project={GCP_PROJECT_ID}
+  2. Click Enable
+  3. Wait ~2 minutes, then re-run /start-client
+```
+
+**GA4 — service account has no access:**
+```
+Fix — GA4 property access:
+  1. Go to GA4 → Admin → Property Access Management
+  2. Add {SERVICE_ACCOUNT_EMAIL} as a Viewer
+  3. Re-run /start-client to verify
+```
+
+### Context files missing
+- If context files are MISSING: run `/onboard` from the agency root to auto-populate from the live site, or fill manually.
+
+### Platform routing
+All CMS skills read the `CMS:` value from `## Platform` in CLAUDE.md:
+- `Shopline` → REST API + `SHOPLINE_{CLIENT}_TOKEN`
+- `Webflow` → Data API + MCP + `WEBFLOW_{CLIENT}_TOKEN`
+- `WordPress` → WP REST API + `WORDPRESS_{CLIENT}_TOKEN`

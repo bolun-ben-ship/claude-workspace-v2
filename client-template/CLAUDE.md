@@ -16,6 +16,18 @@
 > Must be exactly: `Shopline`, `Webflow`, or `WordPress` — case-sensitive.
 > See Platform Routing table in `SKILLS-REFERENCE.md` for what each value triggers.
 
+### WordPress clients only — fill in these additional fields:
+- **WordPress username:** `{WP_USERNAME}` — the WP admin username that owns the Application Password
+- **Auth format:** `base64("{WP_USERNAME}:TOKEN")` — token alone does NOT authenticate
+- **Required role:** Administrator (Editor role cannot delete pages via REST API)
+
+### WordPress API Dependencies — verify before any execution:
+| Dependency | How to check | How to fix if missing |
+|---|---|---|
+| **Yoast REST fields registered** | GET /wp-json/wp/v2/pages/{any_id} — look for `_yoast_wpseo_metadesc` in response | Add "Yoast REST API Fields" Code Snippet (see SKILLS-REFERENCE.md → WordPress Platform Notes) |
+| **Administrator role** | GET /wp-json/wp/v2/users/me — check roles | WP Admin → Users → change role to Administrator |
+| **Page builder** | Check if pages use Elementor | If Elementor: page content NOT editable via REST — use Elementor UI; only classic-editor posts are REST-safe |
+
 ## Workspace
 - **WORKSPACE_ROOT:** `~/Antigravity/RightClickAI-seo-workspace/clients/{CLIENT_SLUG}`
 - **Outputs:** `Content & SEO/outputs/{platform}-{handle}/`
@@ -32,7 +44,7 @@
 | `/seo-final-report` | End-of-engagement comprehensive report — global, works on any platform |
 | `/shopline-onpage-implement` | On-page changes via Shopline API — Shopline clients only |
 | `/webflow-onpage-implement` | On-page changes via Webflow API + MCP — Webflow clients only |
-| `/wordpress-onpage-implement` | On-page changes via WordPress REST API — WordPress clients only (preview) |
+| `/wordpress-onpage-implement` | On-page changes via WordPress REST API — skill not yet built; execute directly via Bash + WP REST API |
 | `/carousel` | Instagram carousel generator — branded 7-slide HTML preview + export as PNGs |
 
 ## Analytics

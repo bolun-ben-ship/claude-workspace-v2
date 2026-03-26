@@ -71,6 +71,55 @@ echo "PLATFORM_TOKEN: ${!TOKEN_ENV_VAR:+SET}"
 
 Report: `[SET ✓]` / `[NOT SET ✗]` / `[SET but file not found ✗]` for each.
 
+### WordPress clients — additional connection verification
+
+If `CMS: WordPress`, run these additional checks. Replace `{WP_USERNAME}` with the username from CLAUDE.md and `{API_BASE}` with the API base URL.
+
+```python
+import base64, os, subprocess, json
+
+token = os.environ.get("{TOKEN_ENV_VAR}", "")
+username = "{WP_USERNAME}"
+
+if not token:
+    print("WP Auth: NOT SET ✗")
+else:
+    encoded = base64.b64encode(f"{username}:{token}".encode()).decode()
+    result = subprocess.run(
+        ["curl", "-s", "{API_BASE}/users/me?_fields=name,roles",
+         "-H", f"Authorization: Basic {encoded}"],
+        capture_output=True, text=True
+    )
+    try:
+        d = json.loads(result.stdout)
+        if d.get("name"):
+            roles = d.get("roles", [])
+            is_admin = "administrator" in roles
+            print(f"WP Auth: CONNECTED ✓ (user: {d['name']}, role: {', '.join(roles)})")
+            print(f"WP Role: {'Administrator ✓' if is_admin else 'NOT Administrator ✗ — page deletion will fail'}")
+        else:
+            print(f"WP Auth: FAILED ✗ — {d.get('code', 'unknown')} (check username in CLAUDE.md matches Application Password owner)")
+    except:
+        print("WP Auth: ERROR parsing response")
+
+# Check Yoast REST fields
+result2 = subprocess.run(
+    ["curl", "-s", "{API_BASE}/pages?per_page=1&_fields=_yoast_wpseo_metadesc",
+     "-H", f"Authorization: Basic {encoded}"],
+    capture_output=True, text=True
+)
+try:
+    pages = json.loads(result2.stdout)
+    if isinstance(pages, list) and pages and "_yoast_wpseo_metadesc" in pages[0]:
+        print("Yoast REST fields: REGISTERED ✓")
+    else:
+        print("Yoast REST fields: NOT REGISTERED ✗ — meta desc/noindex updates will fail. Install 'Yoast REST API Fields' Code Snippet.")
+except:
+    print("Yoast REST fields: could not verify")
+```
+
+Report all findings in the briefing credentials section.
+
 ---
 
 ## Step 5 — Verify connections
@@ -228,6 +277,9 @@ Active campaign:  [Month N of X — from most recent MONTHLY-REPORT, or "none"]
 Credentials:
   {GOOGLE_KEY_ENV}:   [SET ✓ / NOT SET ✗ / SET but file not found ✗]
   {TOKEN_ENV_VAR}:    [SET ✓ / NOT SET ✗]
+  [WordPress only] WP Auth:          [CONNECTED as {user} ({role}) ✓ / FAILED ✗]
+  [WordPress only] Yoast REST fields: [REGISTERED ✓ / NOT REGISTERED ✗]
+  [WordPress only] Elementor:         [note if site uses Elementor — page content not editable via REST]
 
 Connections:
   {PLATFORM} API:          [CONNECTED ✓ / API reachable, auth failed ✗ / API unreachable ✗]

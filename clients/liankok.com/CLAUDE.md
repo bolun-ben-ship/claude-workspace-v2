@@ -10,11 +10,26 @@
 - **CMS:** WordPress
 - **Store / Site handle:** `liankok`
 - **Access token:** `$WORDPRESS_LIANKOK_TOKEN` (env var — never hardcode)
+- **WordPress username:** `liubolun`
+- **Auth format:** `base64("liubolun:TOKEN")` — token alone does NOT authenticate; must be paired with username
+- **Required role:** Administrator (Editor role cannot delete pages via REST API)
 - **API base:** https://liankok.com/wp-json/wp/v2
 
 > ⚠️ The `CMS:` value above is read by ALL skills to route blog publishing and on-page execution.
 > Must be exactly: `Shopline`, `Webflow`, or `WordPress` — case-sensitive.
 > See Platform Routing table in `SKILLS-REFERENCE.md` for what each value triggers.
+
+## WordPress API Dependencies
+These must be in place before any API-based SEO execution:
+
+| Dependency | Status | How to verify |
+|---|---|---|
+| **Yoast REST fields registered** | ✅ Installed — Code Snippets plugin, snippet "Yoast REST API Fields" (ID 4380) | `GET /wp-json/wp/v2/pages/1890` — check response includes `_yoast_wpseo_metadesc` key |
+| **Administrator role** | ✅ liubolun is Administrator | `GET /wp-json/wp/v2/users/me` — check roles array |
+| **Elementor pages** | ⚠️ Cannot edit via REST | All main site pages use Elementor — content is in `_elementor_data` meta, not the WP content field. Page copy changes require Elementor UI. |
+| **Classic editor posts** | ✅ Safely editable via REST | Blog posts use classic HTML — content field updates work normally |
+
+> ⚠️ If the Yoast REST Fields snippet is ever deactivated or the site is migrated, meta descriptions and noindex flags will no longer be writable via the API. Re-install the snippet before running any on-page implementation.
 
 ## Workspace
 - **WORKSPACE_ROOT:** `~/Antigravity/RightClickAI-seo-workspace/clients/liankok.com`
@@ -32,7 +47,7 @@
 | `/seo-final-report` | End-of-engagement comprehensive report — global, works on any platform |
 | `/shopline-onpage-implement` | On-page changes via Shopline API — Shopline clients only |
 | `/webflow-onpage-implement` | On-page changes via Webflow API + MCP — Webflow clients only |
-| `/wordpress-onpage-implement` | On-page changes via WordPress REST API — WordPress clients only (preview) |
+| `/wordpress-onpage-implement` | On-page changes via WordPress REST API — skill not yet built; execute directly via Bash + WP REST API (see SEO-PLAN output for pattern) |
 | `/carousel` | Instagram carousel generator — branded 7-slide HTML preview + export as PNGs |
 
 ## Analytics
@@ -141,3 +156,6 @@ Keeping it accurate means every session starts with correct context.
 - Hardcode tokens or credentials in any output file
 - Execute CMS or file changes without explicit approval
 - Assume product pricing without confirming with client — no prices are shown on the site
+- Use the token alone for WordPress auth — always pair as `base64("username:token")`
+- Attempt to update page content via REST API on Elementor-built pages — use Elementor UI instead
+- Run WordPress on-page implementation without first verifying Yoast REST fields snippet is active

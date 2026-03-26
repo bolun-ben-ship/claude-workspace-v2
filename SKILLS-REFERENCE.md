@@ -67,12 +67,69 @@ Skills read `CMS:` from `## Platform` in the client's `CLAUDE.md`.
 |---|---|---|---|---|
 | `Shopline` | `shopline` | REST API `published: false` | `shopline-onpage-implement` | `SHOPLINE_{CLIENT}_TOKEN` |
 | `Webflow` | `webflow` | MCP `isDraft: true` | `webflow-onpage-implement` | `WEBFLOW_{CLIENT}_TOKEN` + MCP |
-| `WordPress` | `wordpress` | WP REST API `status: draft` | `wordpress-onpage-implement` *(preview)* | `WP_{CLIENT}_TOKEN` |
+| `WordPress` | `wordpress` | WP REST API `status: draft` | `wordpress-onpage-implement` *(not yet built — execute directly via Bash + WP REST API)* | `WORDPRESS_{CLIENT}_TOKEN` |
 | anything else | `unknown` | Save HTML locally | Plan only — no execution | None required |
 
 **Skills using this routing:** `ai-seo-pipeline`, `3blog-seo-first-run`, `seo-implementation-plan`
 
 **Adding a new platform:** Add a row here → add execution blocks in each of the 4 skills above → create `{platform}-onpage-implement` skill → add to `install.sh` → confirm this file updated.
+
+---
+
+### WordPress Platform — Implementation Notes
+
+**Auth format:** `Authorization: Basic base64("username:token")` — the Application Password token alone does not work. The WordPress username must be known and paired with the token.
+
+**Required fields in client CLAUDE.md:**
+- `WordPress username: {WP_USERNAME}` — must be the user who owns the Application Password
+- `Required role: Administrator` — Editor role cannot delete pages via REST API
+
+**Yoast SEO meta fields:** Not registered for REST API by default. Must install the following Code Snippet via the Code Snippets plugin:
+
+```php
+add_action('rest_api_init', function() {
+    $yoast_fields = [
+        '_yoast_wpseo_metadesc',
+        '_yoast_wpseo_title',
+        '_yoast_wpseo_meta-robots-noindex',
+        '_yoast_wpseo_schema_article_type',
+        '_yoast_wpseo_schema_page_type',
+    ];
+    foreach (['post', 'page'] as $post_type) {
+        foreach ($yoast_fields as $field) {
+            register_rest_field($post_type, $field, [
+                'get_callback'    => fn($obj) => get_post_meta($obj['id'], $field, true),
+                'update_callback' => fn($val, $obj) => update_post_meta($obj->ID, $field, sanitize_text_field($val)),
+                'schema'          => ['type' => 'string'],
+            ]);
+        }
+    }
+});
+```
+
+Name it "Yoast REST API Fields", run everywhere, activate. Without this, meta descriptions, noindex flags and schema types cannot be set via the REST API.
+
+**Elementor limitation:** Pages built with Elementor store content in `_elementor_data` post meta — NOT in the WordPress content field. Attempting to update page content via REST API on Elementor pages has no visible effect (for Elementor 3.x) or breaks layouts. Only classic-editor blog posts are safely editable via REST content field.
+
+**wordpress-onpage-implement skill:** Not yet built as a formal skill. Execute WordPress on-page changes directly via Bash + Python using the WP REST API pattern established in liankok.com's SEO-PLAN-2026-03-26.md.
+
+**What IS executable via WordPress REST API (with correct auth + Yoast snippet + admin role):**
+- Trash/delete posts and pages
+- Create new blog posts
+- Update blog post content (classic editor only — not Elementor)
+- Update Yoast meta descriptions, title tags, noindex flags, schema types (requires Yoast snippet)
+- Update image alt text via `/wp/v2/media/{id}`
+- Update user display name via `/wp/v2/users/{id}`
+
+**What is NOT executable via WordPress REST API (requires WP admin UI):**
+- Install/activate/deactivate plugins
+- Change Yoast global settings (WebSite.name, OG image)
+- Edit Elementor page content/layouts
+- Modify theme files or functions.php
+- Configure WooCommerce
+- Create 301 redirects
+- Convert images to WebP
+- Fix robots.txt
 
 ---
 

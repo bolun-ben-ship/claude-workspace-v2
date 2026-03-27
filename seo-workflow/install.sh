@@ -18,6 +18,7 @@ AUDIT_ONLY=false
 
 SKILLS=(
   3blog-seo-first-run
+  ab-test-loop
   ai-seo-pipeline
   carousel
   ga4-report

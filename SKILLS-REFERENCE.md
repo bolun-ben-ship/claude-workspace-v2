@@ -2,7 +2,7 @@
 
 > Master reference for all skills, orchestrators, agents, subagents, and commands.
 > Source of truth: `seo-workflow/` — deploy with `bash seo-workflow/install.sh`
-> Last updated: 2026-03-27 (24 skills: 4 orchestrators, 2 data, 1 research, 1 routing plugin, 12 specialists, 1 design, 1 planning, 1 reporting, 1 workspace maintenance)
+> Last updated: 2026-03-27 (25 skills: 4 orchestrators, 1 ab-testing, 2 data, 1 research, 1 routing plugin, 12 specialists, 1 design, 1 planning, 1 reporting, 1 workspace maintenance)
 
 ---
 
@@ -214,6 +214,26 @@ These are standalone commands that work from any client workspace.
 
 ---
 
+## A/B Testing
+
+### `/ab-test-loop`
+**What it does:** Autonomous PostHog experiment iteration loop. Monitors all running experiments for Bayesian significance (>95%), declares winners, rolls the winning variant to 100% via PostHog feature flags, generates the next copy variants using tone-guide.md, gets user approval, and launches the next experiment automatically. Supports any PostHog experiment type (CTA text, hero headlines, etc). Also handles one-time scroll depth tracking setup (25/50/75/90%) via Webflow Pages API.
+**Phases:**
+- Phase S: One-time scroll tracking setup (injects PostHog JS into Webflow page footer via Pages API, publishes site)
+- Phase 0: Load tone-guide.md + client-info.md
+- Phase 1: Fetch all running PostHog experiments
+- Phase 2: Check each for significance (Bayesian >95%, min 100 exposures per variant)
+- Phase 3: For each winner — conclude experiment → roll out via feature flag → log → generate variants → **approval gate** → create next experiment
+- Phase 4: Summary report
+**Winner rollout:** Sets winning variant to 100% on the PostHog feature flag; the site JS serves it to all users immediately. Hardcoding into Webflow is flagged as a monthly-onpage TODO.
+**New experiment:** Uses same primary metric as concluded experiment + `scroll_depth ≥ 50%` as secondary metric (if scroll tracking active).
+**Scheduled task:** `aexphl-ab-test-loop` (weekly, every Monday 9am)
+**Uses:** PostHog MCP (`experiment-get-all`, `experiment-results-get`, `experiment-update`, `update-feature-flag`, `create-feature-flag`, `experiment-create`), Webflow Pages API (scroll tracking setup only)
+**Output files:** `ab-tests/AB-TEST-LOG.md`, `ab-tests/SCROLL-TRACKING-SETUP.md`
+**Run from:** Client workspace (`clients/{domain}/`)
+
+---
+
 ## Standalone Research Skills
 
 ### `/gsc-report`
@@ -390,6 +410,13 @@ seo-audit
 
 seo-and-blog (27 sub-skill router)
   └─ routes to → all individual SEO + blog skills
+
+ab-test-loop (autonomous A/B iteration)
+  └─ reads → PostHog MCP (experiments + feature flags)
+  └─ reads → context/tone-guide.md, context/client-info.md
+  └─ writes → PostHog experiments + feature flags (conclude, rollout, create)
+  └─ writes → Webflow Pages API (scroll tracking setup only)
+  └─ scheduling via → Claude Code scheduled tasks (aexphl-ab-test-loop, weekly)
 ```
 
 ---
@@ -408,6 +435,8 @@ bash seo-workflow/install.sh --audit  # audit only
 | `{CLIENT}_GOOGLE_KEY` env var → path to JSON key file | gsc-report, ga4-report, all orchestrators |
 | `PERPLEXITY_API_KEY` env var | last30days (all clients except aexphl) |
 | `OPENAI_API_KEY` env var | last30days (aexphl only — `REDDIT_BACKEND=openai` in `.claude/last30days.env`) |
+| PostHog MCP connected (`~/.mcp.json`) | ab-test-loop |
+| `WEBFLOW_{CLIENT}_TOKEN` env var | ab-test-loop (scroll tracking setup) |
 | `MAILCHIMP_API_KEY` env var | aexphl mailchimp-sync script |
 | `CALENDLY_API_KEY` env var | aexphl mailchimp-sync script (activates Calendly sync — token needs `scheduled_events:read` scope) |
 | `MONDAY_API_KEY` env var | aexphl mailchimp-sync script (delta sync of Monday Leads + Customers boards) |

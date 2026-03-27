@@ -1,6 +1,6 @@
 # SEO Workflow — Claude Code Skills & Orchestrators
 
-A complete SEO and content pipeline for Claude Code. Includes 4 orchestrators, 2 data skills, 1 routing plugin, 12 specialist skills, 1 design skill, 1 planning skill, 1 reporting skill, 1 research skill, and 6 subagents — all installable from this repo.
+A complete SEO and content pipeline for Claude Code. Includes 4 orchestrators, 1 A/B testing skill, 2 data skills, 1 routing plugin, 12 specialist skills, 1 design skill, 1 planning skill, 1 reporting skill, 1 research skill, and 6 subagents — all installable from this repo.
 
 ---
 
@@ -13,6 +13,11 @@ A complete SEO and content pipeline for Claude Code. Includes 4 orchestrators, 2
 | `ai-seo-pipeline` | "automate SEO" / "set up SEO automation" | Long-term automation (3/6/12 months): questionnaire → initial run → weekly blogs → monthly on-page → reports |
 | `shopline-onpage-implement` | "fix on-page SEO on Shopline" / "implement SEO on Shopline" | Shopline-only: audit → GSC/GA4 → fetch live store → plan → approve → execute via Shopline REST API |
 | `webflow-onpage-implement` | "fix on-page SEO on Webflow" / "implement SEO on Webflow" | Webflow-only: audit → GSC/GA4 → fetch live site → plan → approve → execute via Webflow API + MCP |
+
+### A/B Testing
+| Skill | Trigger | What it does |
+|---|---|---|
+| `ab-test-loop` | "ab-test-loop" / "check my a/b tests" / "check experiment results" | Autonomous PostHog experiment loop — monitors significance, rolls out winners, generates next variants, launches new experiments |
 
 ### Data Skills
 | Skill | Trigger | What it does |

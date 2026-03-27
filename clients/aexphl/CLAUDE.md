@@ -28,6 +28,7 @@
 | `/seo-final-report` | End-of-engagement comprehensive report |
 | `/webflow-onpage-implement` | On-page SEO changes (titles, meta, schema) via Webflow API + MCP |
 | `/carousel` | Instagram carousel generator — branded 7-slide HTML preview + export as PNGs |
+| `/ab-test-loop` | Autonomous A/B test loop — checks PostHog experiments for significance, rolls out winners, generates + launches next variants |
 
 ## Analytics
 - GSC site: `https://aexphl.com`
@@ -76,6 +77,7 @@ Scheduled tasks running (see Scheduled tab in Claude Code sidebar):
 - `aexphl-week1-report` — one-off 2026-03-30
 - `aexphl-final-report` — one-off 2026-06-23
 - `aexphl-mailchimp-sync` — every hour, syncs Webflow forms + Calendly bookings + Monday CRM delta → Mailchimp
+- `aexphl-ab-test-loop` — every Monday 9am, checks PostHog experiments for significance, rolls out winners, prompts for next variant approval
 
 **Required:** `~/.claude/settings.json` must have `Bash`, `Read`, `Write`, `Edit`, `WebSearch`, `WebFetch` in `permissions.allow` — otherwise tasks will prompt for approval on every run.
 

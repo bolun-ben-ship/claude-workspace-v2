@@ -32,7 +32,7 @@ Before building the plan, classify every changed file against this matrix:
 | Change type | Required propagations |
 |---|---|
 | Skill `SKILL.md` modified (logic, description, output filenames changed) | Update SKILLS-REFERENCE.md entry; if output filenames changed → grep all files for old filename, fix every match |
-| New skill folder created in `seo-workflow/` | Add to `install.sh` SKILLS array; add entry to SKILLS-REFERENCE.md; add to CLAUDE.md Workspace Structure diagram; add to `seo-workflow/README.md` Skill Index; update skill count in CLAUDE.md and SKILLS-REFERENCE.md header |
+| New skill folder created in `seo-workflow/` | Add to `install.sh` SKILLS array; add entry to SKILLS-REFERENCE.md; add to CLAUDE.md Workspace Structure diagram; add to `seo-workflow/README.md` Skill Index; update skill count in CLAUDE.md and SKILLS-REFERENCE.md header. **Client propagation rule:** check all `clients/*/CLAUDE.md` and `client-template/CLAUDE.md` — if the skill is universally applicable (works for any client), add it to `client-template/CLAUDE.md` and all client CLAUDE.md files; if it is client-specific (e.g. requires a particular MCP, platform, or integration only one client has), skip propagation to other clients but explicitly note this in the plan with the reason. Never silently skip. |
 | Skill renamed or deleted | Remove/rename in `install.sh` SKILLS array; add old name to legacy removal list in install.sh; update SKILLS-REFERENCE.md; update README.md; update CLAUDE.md; grep entire `seo-workflow/` for old name → fix all matches in Sub-skill Reference Paths sections of orchestrators; grep all `clients/*/CLAUDE.md` for old name → fix matches |
 | Command file (`.claude/commands/*.md`) modified | Update SKILLS-REFERENCE.md entry for that command; copy updated file to every `clients/*/.claude/commands/` folder; run install.sh |
 | New command file added | Same as modified + add to CLAUDE.md Commands table |
@@ -147,6 +147,10 @@ Present the plan as a table:
 Already consistent (no action needed):
 - CLAUDE.md Workspace Structure — already reflects current skill set ✅
 - client-template/CLAUDE.md — no command changes ✅
+
+Client propagation decisions (must always be explicit — never silent):
+- clients/owllight/CLAUDE.md — ⏭ skipped: {reason, e.g. "skill requires PostHog MCP, not configured for this client"}
+- clients/liankok.com/CLAUDE.md — ⏭ skipped: {reason}
 ```
 
 Also state:
